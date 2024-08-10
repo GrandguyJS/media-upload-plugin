@@ -1,20 +1,20 @@
-{
-    "name": "Test Plugin",
-    "description": "A description of the test plugin",
-    "id": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
-    "version": "1.0.3.0",
-    "targetAbi": "10.9.9.0",
-    "targetJellyfinVersion": "10.9.9",
-    "authors": ["grandguyjs"],
-    "category": "General",
-    "versions": [
-        {
-            "changelog": "Nothing",
-            "targetAbi": "10.9.9.0",
-            "timestamp": "2024-08-08 00:00:00",
-            "version": "0.1.0.0",
-            "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/raw/main/plugin.zip",
-            "checksum": "4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e"
-        }
-    ]
-}
+[
+    {
+        "category": "General",
+        "guid": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
+        "name": "Test",
+        "description": "Test",
+        "owner": "grandguyjs",
+        "overview": "test",
+        "versions": [
+            {
+                "checksum": "4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e",
+                "changelog": "bug fixes and improvements",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/raw/main/plugin.zip",
+                "timestamp": "2020-03-27 06:02:58",
+                "version": "1.0.0.0"
+            }
+        ]
+    }
+]
