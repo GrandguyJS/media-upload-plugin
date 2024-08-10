@@ -10,7 +10,7 @@
     "files": [
       {
         "name": "Jellyfin.Plugin.Template.dll",
-        "url": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/Jellyfin.Plugin.Template.dll",
+        "url": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
         "checksum": "sha256:4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e"
       }
     ],
