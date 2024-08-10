@@ -1,4 +1,4 @@
-obj
+obj/
 Configuration
 Plugin.cs
 Jellyfin.Plugin.MyPlugin/obj
