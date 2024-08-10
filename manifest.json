@@ -5,8 +5,7 @@
     "version": "1.0.0",
     "targetAbi": "10.8.0.0",
     "targetJellyfinVersion": "10.8.0",
-    "authors": [ "Your Name" ],
+    "authors": [ "My Name" ],
     "category": "General",
-    "icon": "path/to/icon.png",
-    "plugin": "path/to/MyPlugin.dll"
+    "plugin": "Jellyfin.Plugin.Template.dll"
   }
