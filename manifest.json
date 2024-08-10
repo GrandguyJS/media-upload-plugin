@@ -1,6 +1,6 @@
 {
-    "name": "Test",
-    "description": "Test",
+    "name": "Test Plugin",
+    "description": "A description of the test plugin",
     "id": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
     "version": "1.0.3.0",
     "targetAbi": "10.9.9.0",
@@ -8,12 +8,12 @@
     "authors": ["grandguyjs"],
     "category": "General",
     "files": [
-      {
-        "name": "Jellyfin.Plugin.Template.dll",
-        "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
-        "checksum": "5daa9ea39e1df6cfffb3f35d68155e31f4302a5801935118c8d35de819b88504"
-      }
+        {
+            "name": "Jellyfin.Plugin.Template.dll",
+            "url": "https://github.com/GrandguyJS/media-upload-plugin/raw/main/plugin.zip",
+            "checksum": "4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e"
+        }
     ],
     "changelog": "bug fixes and improvements",
     "timestamp": "2020-03-27 06:02:58"
-  }
+}
