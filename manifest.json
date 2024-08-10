@@ -1,0 +1,12 @@
+{
+    "name": "MyPlugin",
+    "description": "A sample plugin for Jellyfin.",
+    "id": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
+    "version": "1.0.0",
+    "targetAbi": "10.8.0.0",
+    "targetJellyfinVersion": "10.8.0",
+    "authors": [ "Your Name" ],
+    "category": "General",
+    "icon": "path/to/icon.png",
+    "plugin": "path/to/MyPlugin.dll"
+  }
