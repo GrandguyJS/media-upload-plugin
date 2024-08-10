@@ -15,5 +15,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public PluginConfiguration()
     {
         // Initialize properties with default values if necessary
+        IgnoreString = string.Empty;
     }
+
+    /// <summary>
+    /// Gets or sets a value of the patterns we want to ignore.
+    /// </summary>
+    public string IgnoreString { get; set; }
 }
