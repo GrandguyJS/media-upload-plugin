@@ -1,11 +1,20 @@
-{
-    "name": "MyPlugin",
-    "description": "A sample plugin for Jellyfin.",
-    "id": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
-    "version": "1.0.0",
-    "targetAbi": "10.8.0.0",
-    "targetJellyfinVersion": "10.8.0",
-    "authors": [ "My Name" ],
-    "category": "General",
-    "plugin": "https://raw.githubusercontent.com/your-username/your-repository-name/main/Jellyfin.Plugin.Template.dll"
-  }
+[
+    {
+        "category": "General",
+        "guid": "lsoghikl-6ab4-412a-8f79-2cab93fb2bc5",
+        "name": "Test",
+        "description": "Test",
+        "owner": "grandguyjs",
+        "overview": "test",
+        "versions": [
+            {
+                "checksum": "4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e",
+                "changelog": "bug fixes and improvements",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/Jellyfin.Plugin.Template.dll",
+                "timestamp": "2020-03-27 06:02:58",
+                "version": "1.0.3.0"
+            }
+        ]
+    }
+]
