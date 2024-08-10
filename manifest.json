@@ -9,9 +9,8 @@
     "category": "General",
     "files": [
       {
-        "name": "Jellyfin.Plugin.Template.dll",
-        "url": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
-        "checksum": "sha256:4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e"
+        "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
+        "checksum": "5daa9ea39e1df6cfffb3f35d68155e31f4302a5801935118c8d35de819b88504"
       }
     ],
     "changelog": "bug fixes and improvements",
