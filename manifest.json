@@ -8,12 +8,12 @@
         "overview": "test",
         "versions": [
             {
-                "checksum": "4b98351d2d012508cc85795cdce9f754d5dc5c07a631a5ece3f137918e3ba99e",
+                "checksum": "5daa9ea39e1df6cfffb3f35d68155e31f4302a5801935118c8d35de819b88504",
                 "changelog": "bug fixes and improvements",
                 "targetAbi": "10.9.9.0",
-                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/raw/main/plugin.zip",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
                 "timestamp": "2020-03-27 06:02:58",
-                "version": "1.0.0.0"
+                "version": "1.0.3.0"
             }
         ]
     }
