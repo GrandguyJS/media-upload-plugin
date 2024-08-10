@@ -8,7 +8,7 @@
         "overview": "test",
         "versions": [
             {
-                "checksum": "49be1b8362e7378d9ba83481741e7d31",
+                "checksum": "ED3882614CB7FFE71D876D4336A5453C",
                 "changelog": "bug fixes and improvements",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
