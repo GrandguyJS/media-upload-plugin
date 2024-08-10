@@ -9,10 +9,17 @@
         "versions": [
             {
                 "checksum": "49be1b8362e7378d9ba83481741e7d31",
-                "changelog": "bug fixes and improvements",
+                "changelog": "Sample plugin, no config",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/pre/plugin.zip",
-                "version": "1.0.3.0"
+                "version": "0.1.0.0"
+            },
+            {
+                "checksum": "d25857449df18d7f6eea0065a7f40332",
+                "changelog": "Config page",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/0.2/plugin.zip",
+                "version": "0.2.0.0"
             }
         ]
     }
