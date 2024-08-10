@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="10.9.9" />
+    <PackageReference Include="Jellyfin.Model" Version="10.9.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="pages\config.html" />
+    <EmbeddedResource Include="pages\config.html" />
+  </ItemGroup>
+
+</Project>
