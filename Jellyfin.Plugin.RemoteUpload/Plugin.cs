@@ -45,4 +45,17 @@ public class Plugin : BasePlugin<PluginConfiguration>
     /// Gets the plugin configuration.
     /// </summary>
     public PluginConfiguration PluginConfiguration => Configuration;
+
+    /// <inheritdoc />
+    public IEnumerable<PluginPageInfo> GetPages()
+    {
+        return new[]
+        {
+            new PluginPageInfo
+            {
+                Name = this.Name,
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.pages.config.html", GetType().Namespace)
+            }
+        };
+    }
 }
