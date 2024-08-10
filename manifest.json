@@ -9,6 +9,7 @@
     "category": "General",
     "files": [
       {
+        "name": "Jellyfin.Plugin.Template.dll",
         "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/blob/main/plugin.zip",
         "checksum": "5daa9ea39e1df6cfffb3f35d68155e31f4302a5801935118c8d35de819b88504"
       }
@@ -16,4 +17,3 @@
     "changelog": "bug fixes and improvements",
     "timestamp": "2020-03-27 06:02:58"
   }
-  
