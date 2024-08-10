@@ -7,5 +7,5 @@
     "targetJellyfinVersion": "10.8.0",
     "authors": [ "My Name" ],
     "category": "General",
-    "plugin": "Jellyfin.Plugin.Template.dll"
+    "plugin": "https://raw.githubusercontent.com/your-username/your-repository-name/main/Jellyfin.Plugin.Template.dll"
   }
