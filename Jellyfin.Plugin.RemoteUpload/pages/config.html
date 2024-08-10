@@ -23,5 +23,18 @@
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        var RemoteUploadConfig = {
+            pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6'
+        };
+
+        document.querySelector('#RemoteUploadConfigPage')
+            .addEventListener('pageshow', function() {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+    </script>
 </body>
 </html>

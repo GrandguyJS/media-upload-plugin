@@ -15,7 +15,7 @@
                 "version": "0.1.0.0"
             },
             {
-                "checksum": "f99a9b85e03278026ce1644996e7c49f",
+                "checksum": "d77ef21900cd2d15c96c94a9dacd5e7c",
                 "changelog": "Config page",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/0.2/plugin.zip",
