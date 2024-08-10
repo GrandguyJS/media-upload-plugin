@@ -2,10 +2,10 @@
     {
         "category": "General",
         "guid": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
-        "name": "Test",
-        "description": "Test",
+        "name": "RemoteUpload",
+        "description": "RemoteUpload",
         "owner": "grandguyjs",
-        "overview": "test",
+        "overview": "remoteupload",
         "versions": [
             {
                 "checksum": "49be1b8362e7378d9ba83481741e7d31",
