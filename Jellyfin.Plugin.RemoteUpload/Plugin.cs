@@ -11,7 +11,7 @@ namespace Jellyfin.Plugin.RemoteUpload;
 /// <summary>
 /// Represents the RemoteUpload plugin for Jellyfin.
 /// </summary>
-public class Plugin : BasePlugin<PluginConfiguration>
+public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Plugin"/> class.
@@ -22,6 +22,8 @@ public class Plugin : BasePlugin<PluginConfiguration>
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
+
+        ConfigurationChanged += OnConfigurationChanged;
     }
 
     /// <summary>
@@ -57,8 +59,19 @@ public class Plugin : BasePlugin<PluginConfiguration>
             new PluginPageInfo
             {
                 Name = this.Name,
-                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.pages.config.html", GetType().Namespace)
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Pages.config.html", GetType().Namespace)
+            },
+            
+            new PluginPageInfo
+            {
+                Name = @"RemoteUpload",
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Pages.menu.html", GetType().Namespace),
+                EnableInMainMenu = true
             }
         };
+    }
+
+    private void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
+    {
     }
 }

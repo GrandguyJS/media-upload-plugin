@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Jellyfin.Plugin.RemoteUpload</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="pages\config.html" />
-    <EmbeddedResource Include="pages\config.html" />
+    <None Remove="Pages\config.html" />
+    <EmbeddedResource Include="Pages\config.html" />
+    <EmbeddedResource Include="Pages\menu.html" />
   </ItemGroup>
 
 </Project>
