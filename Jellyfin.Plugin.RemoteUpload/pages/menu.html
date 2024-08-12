@@ -45,6 +45,7 @@
 
 					if (response.ok) {
 						response.text().then(txt => console.log(txt))
+						document.getElementById('uploadfile').value = '';
 					}
 				} catch (error) {
 					console.error('Error:', error);
