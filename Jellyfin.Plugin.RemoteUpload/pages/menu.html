@@ -2,10 +2,53 @@
 	 data-require="emby-button,emby-select,emby-checkbox">
 	<div data-role="content">
 		<div class="content-primary">
-			<h2>RemoteUpload</h2>
-
 			<div class="content-primary">
+				<form id="RemoteUploadForm" enctype="multipart/form-data" action="/mediaupload/upload">
+                    <div class="inputContainer">
+						<h2>Remote Upload</h2>
+						<input type="file" name="files" required multiple id="uploadfile" is="emby-input" value="Upload file"/>
+						<div class="fieldDescription">Uploading to <span id="uploaddir"></span></div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploaddirsubmit">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
 			</div>
         </div>
-    </div> 
+    </div> 	
+	<script>
+		var RemoteUploadConfig = {
+			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
+			uploaddir: ''
+		};
+		
+		Dashboard.showLoadingMsg();
+		ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+			document.getElementById("uploaddir").textContent = config.uploaddir;
+			RemoteUploadConfig.uploaddir = config.uploaddir
+			Dashboard.hideLoadingMsg();
+		});
+
+		document.querySelector("#RemoteUploadForm")
+			.addEventListener("submit", async function(e) {
+				e.preventDefault()
+				let formElement = document.getElementById("RemoteUploadForm")
+				let formData = new FormData(formElement);
+
+				try {
+					const response = await fetch(formElement.action, {
+						method: 'POST',
+						body: formData
+					});
+
+					if (response.ok) {
+						response.text().then(txt => console.log(txt))
+					}
+				} catch (error) {
+					console.error('Error:', error);
+				}
+			})
+	</script>
 </div>

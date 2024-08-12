@@ -64,7 +64,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             
             new PluginPageInfo
             {
-                Name = @"RemoteUpload",
+                Name = @"RemoteFileUpload",
                 EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Pages.menu.html", GetType().Namespace),
                 EnableInMainMenu = true
             }

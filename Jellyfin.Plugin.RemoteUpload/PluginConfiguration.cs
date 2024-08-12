@@ -12,6 +12,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public PluginConfiguration()
     {
-        // stuff
+        uploaddir = "/";
     }
+
+    /// <summary>
+    /// Executable for youtube-dl/youtube-dlp
+    /// </summary>
+    public string uploaddir { get; set; }
 }

@@ -9,16 +9,18 @@
         <div data-role="content">
             <div class="content-primary">
                 <form id="RemoteUploadConfigForm">
-                    <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="exec_YTDL">Upload directory</label>
-                        <input id="exec_YTDL" name="exec_YTDL" type="text" is="emby-input" />
-                        <div class="fieldDescription">Path where files will get saved</div>
-                    </div>
-                    <div>
-                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
-                            <span>Save</span>
-                        </button>
-                    </div>
+                    <form id="RemoteUploadForm">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="uploaddir">Upload directory</label>
+                            <input id="uploaddir" name="uploaddir" type="text" is="emby-input" />
+                            <div class="fieldDescription">Path where files will get saved</div>
+                        </div>
+                        <div>
+                            <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploaddirsubmit">
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </form>
                 </form>
             </div>
         </div>
@@ -31,8 +33,24 @@
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+                        document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
                         Dashboard.hideLoadingMsg();
                     });
+                });
+
+            document.querySelector("#RemoteUploadConfigForm")
+                .addEventListener('submit', function(e) {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+                        config.uploaddir = document.getElementById('uploaddir').value;
+                        document.getElementById('uploaddir').value = "";
+                        document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
+                        ApiClient.updatePluginConfiguration(RemoteUploadConfig.pluginUniqueId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    e.preventDefault();
+                    return false;
                 });
         </script>
     </div>
