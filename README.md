@@ -10,6 +10,6 @@ Who should use this plugin?
 2. 🤷 Family members who don't know how to use smb/other file upload systems
 
 Before you continue:
-All files get split in 28MB chunks and get uploaded to the server seperately, because Jellyfin server has a limit of 30MB per request.
+All files get split in 28MB chunks and get uploaded to the server seperately, because Jellyfin (and all ASP .NET applications by default) has a 28.6MB POST-Request limit.
 
 ❗❗❗ Version 1.0.0 has all the basic features, but still consider this work in progress
