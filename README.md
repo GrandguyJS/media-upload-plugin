@@ -6,10 +6,10 @@ How to install:
 3. Reboot Jellyfin Server
 
 Who should use this plugin?
-1. Everybody who forgot to upload media to the server and will not have access to it for a period of time.
-2. Family members who don't know how to use smb/other file upload systems
+1. 🏖️ Everybody who forgot to upload media to the server and will not have access to it for a period of time
+2. 🤷 Family members who don't know how to use smb/other file upload systems
 
 Before you continue:
 All files get split in 28MB chunks and get uploaded to the server seperately, because Jellyfin server has a limit of 30MB per request.
 
-Thanks for using!
+❗❗❗ Version 1.0.0 has all the basic features, but still consider this work in progress
