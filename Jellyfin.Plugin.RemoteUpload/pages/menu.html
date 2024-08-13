@@ -11,7 +11,7 @@
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploaddirsubmit">
-                            <span>Save</span>
+                            <span id="progress">Upload</span>
                         </button>
                     </div>
                 </form>
@@ -34,9 +34,13 @@
 		document.querySelector("#RemoteUploadForm")
 			.addEventListener("submit", async function(e) {
 				e.preventDefault();
+				document.querySelector(".button-submit").style["#292929"]
+
 				let formElement = document.getElementById("RemoteUploadForm");
 				let formData = new FormData(formElement);
 				let url = formElement.action;
+
+				let progess = document.getElementById("progress");
 
 				const chunk_size = 28000000; // 28 MB in Bytes
 
@@ -66,12 +70,16 @@
 								break;
 							}
 
+							let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
+							progress.textContent = file.name + " " + progress_value.toString() + "%"
 							start += chunk_size
 							chunk_index++;
 						}
 
 					}
 				}
+				progress.textContent = "Upload"
+				document.querySelector(".button-submit").style["#00a4dc"]
 				document.getElementById("uploadfile").value = '';
 			})
 	</script>
