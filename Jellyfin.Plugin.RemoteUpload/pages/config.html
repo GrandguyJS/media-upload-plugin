@@ -29,14 +29,11 @@
                 pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6'
             };
 
-            document.querySelector('#RemoteUploadConfigPage')
-                .addEventListener('pageshow', function() {
-                    Dashboard.showLoadingMsg();
-                    ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
-                        document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
-                        Dashboard.hideLoadingMsg();
-                    });
-                });
+            Dashboard.showLoadingMsg();
+            ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+                document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
+                Dashboard.hideLoadingMsg();
+            });
 
             document.querySelector("#RemoteUploadConfigForm")
                 .addEventListener('submit', function(e) {

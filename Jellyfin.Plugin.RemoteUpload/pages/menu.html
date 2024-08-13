@@ -33,23 +33,46 @@
 
 		document.querySelector("#RemoteUploadForm")
 			.addEventListener("submit", async function(e) {
-				e.preventDefault()
-				let formElement = document.getElementById("RemoteUploadForm")
+				e.preventDefault();
+				let formElement = document.getElementById("RemoteUploadForm");
 				let formData = new FormData(formElement);
+				let url = formElement.action;
 
-				try {
-					const response = await fetch(formElement.action, {
-						method: 'POST',
-						body: formData
-					});
+				const chunk_size = 28000000; // 28 MB in Bytes
 
-					if (response.ok) {
-						response.text().then(txt => console.log(txt))
-						document.getElementById('uploadfile').value = '';
+
+				for (let [key, file] of formData.entries()) {
+					let chunk_index = 0;
+					let start = 0;
+
+					if (file instanceof File) { 
+						while (start < file.size) {
+							const chunk = file.slice(start, start+chunk_size);
+							let chunk_form = new FormData();
+							chunk_form.set("file", chunk, file.name)
+							chunk_form.set("chunkIndex", chunk_index)
+							chunk_form.set("totalChunks", Math.ceil(file.size / chunk_size))
+
+							// Request
+							try {
+								console.log(url, chunk_form);
+								const res = await fetch(url, {method: 'POST', body: chunk_form});
+								if (res.ok) {
+									console.log("Successfully saved chunk " + chunk_index);
+								}
+							}
+							catch (error) {
+								console.log(`ERROR: ${error}`);
+								break;
+							}
+
+							start += chunk_size
+							chunk_index++;
+						}
+
 					}
-				} catch (error) {
-					console.error('Error:', error);
 				}
+				document.getElementById("uploadfile").value = '';
 			})
 	</script>
 </div>

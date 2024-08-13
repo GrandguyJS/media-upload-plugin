@@ -19,33 +19,36 @@ namespace Jellyfin.Plugin.RemoteUpload.Api;
 public class UploadController : ControllerBase
 {
     [HttpPost("upload")]
-    
-    public async Task<IActionResult> OnPostUploadAsync(List<IFormFile> files)
+    public async Task<IActionResult> OnPostUploadAsync([FromForm] IFormFile file, [FromForm] int chunkIndex, [FromForm] int totalChunks)
     {
-        long size = files.Sum(f => f.Length);
+        try {
+            PluginConfiguration? config = Plugin.Instance.Configuration; 
+            String uploaddir = config.uploaddir;
 
-        PluginConfiguration? config = Plugin.Instance.Configuration; 
-        String uploaddir = config.uploaddir;
+            if (file.Length > 0) {
+                var tempFilePath = Path.Combine(uploaddir, $"{file.FileName}.part");
 
-        foreach (var formFile in files)
-        {
-            if (formFile.Length > 0)
-            {
-                // Generate a unique file name to avoid overwriting
-                var fileName = Path.GetFileName(formFile.FileName);
-                var filePath = Path.Combine(uploaddir, fileName);
-
-                // Save the file to the specified directory
-                using (var stream = System.IO.File.Create(filePath))
+                using (var stream = new FileStream(tempFilePath, chunkIndex == 0 ? FileMode.Create : FileMode.Append))
                 {
-                    await formFile.CopyToAsync(stream);
+                    await file.CopyToAsync(stream);
+                }
+
+                if (chunkIndex + 1 == totalChunks)
+                {
+                    // All chunks uploaded, rename the temporary file to the original filename
+                    var finalFilePath = Path.Combine(uploaddir, file.FileName);
+                    if (System.IO.File.Exists(finalFilePath))
+                    {
+                        System.IO.File.Delete(finalFilePath);
+                    }
+                    System.IO.File.Move(tempFilePath, finalFilePath);
                 }
             }
+
+            return Ok(new { name = file.FileName, chunk = chunkIndex });
         }
-
-        // Process uploaded files
-        // Don't rely on or trust the FileName property without validation.
-
-        return Ok(new { count = files.Count, size });
+        catch (Exception e) {
+            return Ok(new { error = e });
+        }
     }
 }
