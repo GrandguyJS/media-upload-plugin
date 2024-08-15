@@ -9,7 +9,28 @@ Who should use this plugin?
 1. 🏖️ Everybody who forgot to upload media to the server and will not have access to it for a period of time
 2. 🤷 Family members who don't know how to use smb/other file upload systems
 
-Before you continue:
-All files get split in 28MB chunks and get uploaded to the server seperately, because Jellyfin (and all ASP .NET applications by default) has a 28.6MB POST-Request limit.
+# Reverse proxy setup
+## NGINX
+```
+location / {  
+        client_max_body_size 30M; # You will need to upload 28MB chunks
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+```
 
-❗❗❗ Version 1.0.0 has all the basic features, but still consider this work in progress
+# Error messages
+1. Make sure the client_max_body_size is configured to 30MB
+2. Directory doesn't exist Error
+3. No permission error: Jellyfin User/Group should be able to write files in directory
+`sudo chmod -R u+rx,g+rx /home/{user}`
+
+Thanks for using this plugin!
+
+
