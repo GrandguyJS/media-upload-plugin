@@ -25,6 +25,11 @@ public class UploadController : ControllerBase
             PluginConfiguration? config = Plugin.Instance.Configuration; 
             String uploaddir = config.uploaddir;
 
+            if (!Directory.Exists(uploaddir))
+                {
+                    return BadRequest(new {message = "Directory doesn't exist!"});
+                }
+
             if (file.Length > 0) {
                 var tempFilePath = Path.Combine(uploaddir, $"{file.FileName}.part");
 
@@ -47,8 +52,9 @@ public class UploadController : ControllerBase
 
             return Ok(new { name = file.FileName, chunk = chunkIndex });
         }
-        catch (Exception e) {
-            return Ok(new { error = e });
+        catch (Exception ex)
+        {
+            return BadRequest(new {message = "Something went wrong!"});
         }
     }
 }

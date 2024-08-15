@@ -24,12 +24,15 @@
 			uploaddir: ''
 		};
 		
-		Dashboard.showLoadingMsg();
-		ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
-			document.getElementById("uploaddir").textContent = config.uploaddir;
-			RemoteUploadConfig.uploaddir = config.uploaddir
-			Dashboard.hideLoadingMsg();
-		});
+		async function load() {
+			Dashboard.showLoadingMsg();
+			await ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+				document.getElementById("uploaddir").textContent = config.uploaddir;
+				RemoteUploadConfig.uploaddir = config.uploaddir
+				Dashboard.hideLoadingMsg();
+			});
+		}
+		load()
 
 		document.querySelector("#RemoteUploadForm")
 			.addEventListener("submit", async function(e) {
@@ -59,15 +62,20 @@
 
 							// Request
 							try {
-								console.log(url, chunk_form);
 								const res = await fetch(url, {method: 'POST', body: chunk_form});
 								if (res.ok) {
 									console.log("Successfully saved chunk " + chunk_index);
 								}
-							}
-							catch (error) {
-								console.log(`ERROR: ${error}`);
-								break;
+								else {
+									const errorData = await res.json();
+									progess.textContent = errorData.message;
+									console.error('Upload failed:', errorData.message);
+									return;
+								}
+							} catch (error) {
+								progess.textContent = errorData.message;
+								console.error('Error:', error);
+								return;
 							}
 
 							let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
@@ -78,9 +86,9 @@
 
 					}
 				}
-				progress.textContent = "Upload"
-				document.querySelector(".button-submit").style["#00a4dc"]
-				document.getElementById("uploadfile").value = '';
+			})
+			document.getElementById("uploadfile").addEventListener("change", (event) => {
+				progress.textContent = "Upload";
 			})
 	</script>
 </div>
