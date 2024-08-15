@@ -2,42 +2,42 @@
     {
         "category": "General",
         "guid": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
-        "name": "RemoteUploadbeta",
+        "name": "RemoteUpload",
         "description": "RemoteUpload",
         "owner": "grandguyjs",
         "overview": "remoteupload",
         "versions": [
             {
                 "checksum": "49be1b8362e7378d9ba83481741e7d31",
-                "changelog": "Sample plugin, no config",
+                "changelog": "Sample plugin, no config - Do not download",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/pre/plugin.zip",
                 "version": "0.1.0.0"
             },
             {
                 "checksum": "06dfeea41c31af636f9e9a8680623162",
-                "changelog": "Config page",
+                "changelog": "Config page - Do not download!",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/0.2/plugin.zip",
                 "version": "0.2.0.0"
             },
             {
                 "checksum": "7ca5ba06adebc8914a3504d739f36e02",
-                "changelog": "Basic features",
+                "changelog": "Basic features - Do not download!",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/0.3/plugin.zip",
                 "version": "0.3.0.0"
             },
             {
                 "checksum": "0c5126b6c1297d2130a33845c7efe33e",
-                "changelog": "1.0 Release",
+                "changelog": "1.0 Release - Unstable",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.0/plugin.zip",
                 "version": "1.0.0.0"
             },
             {
                 "checksum": "a4a94b14cad684e52d001a0299efdd80",
-                "changelog": "1.0.1 Release",
+                "changelog": "1.0.1 Release - No Error Handler",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.0.1/plugin.zip",
                 "version": "1.0.1.0"
