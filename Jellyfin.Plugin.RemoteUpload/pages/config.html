@@ -12,7 +12,7 @@
                     <form id="RemoteUploadForm">
                         <div class="inputContainer">
                             <label class="inputLabel inputLabelUnfocused" for="uploaddir">Upload directory</label>
-                            <input id="uploaddir" name="uploaddir" type="text" is="emby-input" />
+                            <input id="uploaddirinput" name="uploaddir" type="text" is="emby-input" />
                             <div class="fieldDescription">Path where files will get saved</div>
                         </div>
                         <div>
@@ -29,23 +29,21 @@
                 pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6'
             };
 
-            async function load() {
+            document.querySelector("#RemoteUploadConfigPage").addEventListener("pageshow", function() {
                 Dashboard.showLoadingMsg();
-                await ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
-                    document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
+                ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+                    document.getElementById('uploaddirinput').setAttribute("placeholder", config.uploaddir);
                     Dashboard.hideLoadingMsg();
                 });
-            }
-
-            load();            
+            });       
 
             document.querySelector("#RemoteUploadConfigForm")
                 .addEventListener('submit', function(e) {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
-                        config.uploaddir = document.getElementById('uploaddir').value;
-                        document.getElementById('uploaddir').value = "";
-                        document.getElementById('uploaddir').setAttribute("placeholder", config.uploaddir);
+                        config.uploaddir = document.getElementById('uploaddirinput').value;
+                        document.getElementById('uploaddirinput').value = "";
+                        document.getElementById('uploaddirinput').setAttribute("placeholder", config.uploaddir);
                         ApiClient.updatePluginConfiguration(RemoteUploadConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

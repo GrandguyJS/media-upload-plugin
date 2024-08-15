@@ -54,7 +54,7 @@ public class UploadController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new {message = "Something went wrong!"});
+            return BadRequest(new {message = "No permission!"});
         }
     }
 }

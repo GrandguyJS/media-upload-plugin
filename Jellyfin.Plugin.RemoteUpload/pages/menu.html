@@ -7,7 +7,7 @@
                     <div class="inputContainer">
 						<h2>Remote Upload</h2>
 						<input type="file" name="files" required multiple id="uploadfile" is="emby-input" value="Upload file"/>
-						<div class="fieldDescription">Uploading to <span id="uploaddir"></span></div>
+						<div class="fieldDescription">Uploading to <span id="uploaddir"></span> Refresh the page if incorrect</div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploaddirsubmit">
@@ -23,17 +23,21 @@
 			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
 			uploaddir: ''
 		};
-		
-		async function load() {
-			Dashboard.showLoadingMsg();
-			await ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+
+		Dashboard.showLoadingMsg();
+
+		function load() {
+			ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
+				console.log(config.uploaddir)
 				document.getElementById("uploaddir").textContent = config.uploaddir;
 				RemoteUploadConfig.uploaddir = config.uploaddir
 				Dashboard.hideLoadingMsg();
 			});
 		}
-		load()
 
+		document.addEventListener("visibilitychange", load())
+		
+		
 		document.querySelector("#RemoteUploadForm")
 			.addEventListener("submit", async function(e) {
 				e.preventDefault();
@@ -87,6 +91,7 @@
 					}
 				}
 			})
+
 			document.getElementById("uploadfile").addEventListener("change", (event) => {
 				progress.textContent = "Upload";
 			})
