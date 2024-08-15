@@ -55,10 +55,9 @@
 									console.log("Successfully saved chunk " + chunk_index);
 								}
 								else {
-									const errorData = await res.json();
-									progess.textContent = errorData.message;
-									console.log('Upload failed:', errorData.message);
-									return;
+									progess.textContent = res;
+									console.log('Upload failed:', res);
+									break;
 								}
 								let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
 								progress.textContent = file.name + " " + progress_value.toString() + "%"
@@ -66,11 +65,12 @@
 								chunk_index++;
 							} catch (error) {
 								console.log('Error:', error);
-								return;
+								break;
 							}
 						}
 					}
 				}
+				return;
 			})
 
 			document.getElementById("uploadfile").addEventListener("change", (event) => {
