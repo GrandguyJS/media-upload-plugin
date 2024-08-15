@@ -29,7 +29,6 @@ location / {
 1. Make sure the client_max_body_size is configured to 30MB
 2. Directory doesn't exist Error
 3. No permission error: Jellyfin User/Group should be able to write files in directory
-`sudo chmod -R u+rx,g+rx /home/{user}`
 
 Thanks for using this plugin!
 
