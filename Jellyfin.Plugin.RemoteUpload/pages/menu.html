@@ -25,7 +25,6 @@
 		document.querySelector("#RemoteUploadForm")
 			.addEventListener("submit", async function(e) {
 				e.preventDefault();
-				document.querySelector(".button-submit").style["#292929"]
 
 				let formElement = document.getElementById("RemoteUploadForm");
 				let formData = new FormData(formElement);
@@ -53,19 +52,21 @@
 								const res = await fetch(url, {method: 'POST', body: chunk_form});
 								if (res.ok) {
 									console.log("Successfully saved chunk " + chunk_index);
+									let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
+									progress.textContent = file.name + " " + progress_value.toString() + "%"
+									start += chunk_size
+									chunk_index++;
 								}
 								else {
-									progess.textContent = res;
-									console.log('Upload failed:', res);
-									break;
-								}
-								let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
-								progress.textContent = file.name + " " + progress_value.toString() + "%"
-								start += chunk_size
-								chunk_index++;
+                                    const result = await res.json();
+                                    progress.textContent = result.message || 'Upload failed!';
+                                    return;
+                                }
+								
 							} catch (error) {
+								progess.textContent = "Upload failed!"
 								console.log('Error:', error);
-								break;
+								return;
 							}
 						}
 					}
