@@ -73,21 +73,18 @@
 								else {
 									const errorData = await res.json();
 									progess.textContent = errorData.message;
-									console.error('Upload failed:', errorData.message);
+									console.log('Upload failed:', errorData.message);
 									return;
 								}
+								let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
+								progress.textContent = file.name + " " + progress_value.toString() + "%"
+								start += chunk_size
+								chunk_index++;
 							} catch (error) {
-								progess.textContent = errorData.message;
-								console.error('Error:', error);
+								console.log('Error:', error);
 								return;
 							}
-
-							let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
-							progress.textContent = file.name + " " + progress_value.toString() + "%"
-							start += chunk_size
-							chunk_index++;
 						}
-
 					}
 				}
 			})

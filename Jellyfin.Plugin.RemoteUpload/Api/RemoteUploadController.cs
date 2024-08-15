@@ -21,13 +21,14 @@ public class UploadController : ControllerBase
     [HttpPost("upload")]
     public async Task<IActionResult> OnPostUploadAsync([FromForm] IFormFile file, [FromForm] int chunkIndex, [FromForm] int totalChunks)
     {
-        try {
-            PluginConfiguration? config = Plugin.Instance.Configuration; 
-            String uploaddir = config.uploaddir;
+        try
+        {
+            PluginConfiguration? config = Plugin.Instance.Configuration;
+            string uploaddir = config.uploaddir;
 
             if (!Directory.Exists(uploaddir))
                 {
-                    return BadRequest(new {message = "Directory doesn't exist!"});
+                    return BadRequest(new { message = "Directory doesn't exist!" });
                 }
 
             if (file.Length > 0) {
@@ -52,9 +53,9 @@ public class UploadController : ControllerBase
 
             return Ok(new { name = file.FileName, chunk = chunkIndex });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest(new {message = "No permission!"});
+            return BadRequest(new { message = "No permission!" });
         }
     }
 }
