@@ -41,6 +41,13 @@
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.0.1/plugin.zip",
                 "version": "1.0.1.0"
+            },
+            {
+                "checksum": "b5572d2524c1ae098908f952a48de062",
+                "changelog": "1.0.2 Release",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.0.1/plugin.zip",
+                "version": "1.0.2.0"
             }
         ]
     }
