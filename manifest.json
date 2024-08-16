@@ -50,7 +50,7 @@
                 "version": "1.0.2.0"
             },
             {
-                "checksum": "3b359be00e71285a1308e24427b21c4d",
+                "checksum": "aad188761c71f3df2283eb7c3baee708",
                 "changelog": "1.0.3 Release - Mobile Fix - Important",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.0.3/plugin.zip",
