@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Plugin.RemoteUpload.Api;
 
 [ApiController]
+[Authorize(Policy = "DefaultAuthorization")]
 [Route("mediaupload")]
 public class UploadController : ControllerBase
 {
