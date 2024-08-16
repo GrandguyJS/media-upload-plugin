@@ -21,6 +21,8 @@
 		var RemoteUploadConfig = {
 			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
 		};
+
+		let progress = document.getElementById("progress_file");
 		
 		document.querySelector("#RemoteFileUploadForm")
 			.addEventListener("submit", async function(e) {
@@ -30,10 +32,7 @@
 				let formData = new FormData(formElement);
 				let url = formElement.action;
 
-				let progess = document.getElementById("progress_file");
-
 				const chunk_size = 28000000; // 28 MB in Bytes
-
 
 				for (let [key, file] of formData.entries()) {
 					let chunk_index = 0;

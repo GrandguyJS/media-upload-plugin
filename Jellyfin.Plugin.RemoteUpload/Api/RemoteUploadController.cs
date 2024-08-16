@@ -28,7 +28,7 @@ public class UploadController : ControllerBase
 
             if (!Directory.Exists(uploaddir))
                 {
-                    throw new DirectoryNotFoundException("The directory was not found.");
+                    return BadRequest(new { message = "Directory doesn't exist!" });
                 }
 
             if (file.Length > 0) {
@@ -53,13 +53,9 @@ public class UploadController : ControllerBase
 
             return Ok(new { name = file.FileName, chunk = chunkIndex });
         }
-        catch (DirectoryNotFoundException ex)
-        {
-            return StatusCode(404, new { message = ex.Message });
-        }
         catch (Exception ex) // Catch any other exceptions
         {
-            return StatusCode(405, new { message = ex.Message });
+            return BadRequest(new { message = ex.Message });
         }
     }
 }
