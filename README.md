@@ -14,7 +14,7 @@ Who should use this plugin?
 ```
 location / {  
         client_max_body_size 30M; # You will need to upload 28MB chunks
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass http://{jellyfin}:{port};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
