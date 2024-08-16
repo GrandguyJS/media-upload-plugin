@@ -3,14 +3,14 @@
 	<div data-role="content">
 		<div class="content-primary">
 			<div class="content-primary">
-				<form id="RemoteUploadForm" enctype="multipart/form-data" action="/mediaupload/upload">
+				<form id="RemoteFileUploadForm" enctype="multipart/form-data" action="/mediaupload/upload">
                     <div class="inputContainer">
-						<h2>Remote Upload</h2>
+						<h2>Upload file</h2>
 						<input type="file" name="files" required multiple id="uploadfile" is="emby-input" value="Upload file"/>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploaddirsubmit">
-                            <span id="progress">Upload</span>
+                            <span id="progress_file">Upload</span>
                         </button>
                     </div>
                 </form>
@@ -22,15 +22,15 @@
 			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
 		};
 		
-		document.querySelector("#RemoteUploadForm")
+		document.querySelector("#RemoteFileUploadForm")
 			.addEventListener("submit", async function(e) {
 				e.preventDefault();
 
-				let formElement = document.getElementById("RemoteUploadForm");
+				let formElement = document.getElementById("RemoteFileUploadForm");
 				let formData = new FormData(formElement);
 				let url = formElement.action;
 
-				let progess = document.getElementById("progress");
+				let progess = document.getElementById("progress_file");
 
 				const chunk_size = 28000000; // 28 MB in Bytes
 
@@ -71,6 +71,7 @@
 						}
 					}
 				}
+				/* If upload finished successfully */
 				progress.textContent = "Upload finished";
 				document.getElementById("uploadfile").value = "";
 				return;
