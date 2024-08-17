@@ -8,7 +8,7 @@
         "overview": "remoteupload",
         "versions": [
             {
-                "checksum": "a71f5012a17deddc5671403d1eaf3625",
+                "checksum": "c63c5f34c90d0822c77822b593f33ac6",
                 "changelog": "1.1 Release - Full functionality - Upload file/URL",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.1/plugin.zip",
