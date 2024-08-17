@@ -87,27 +87,11 @@ public class UploadController : ControllerBase
 
                 using (var client = _httpClientFactory.CreateClient())
                 {
-                    using (HttpResponseMessage response = await client.GetAsync(url))
+                    using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
                         {
                             response.EnsureSuccessStatusCode(); 
 
-                            string filename = null;
-
-                            if (response.Content.Headers.ContentDisposition != null)
-                            {
-                                var contentDisposition = response.Content.Headers.ContentDisposition;
-                                if (!string.IsNullOrEmpty(contentDisposition.FileName))
-                                {
-                                    filename = contentDisposition.FileName.Trim('\"');
-                                }
-                            }
-                            if (filename != null) {
-
-                            }
-                            else {
-                                Uri uri = new Uri(url);
-                                filename = System.IO.Path.GetFileName(uri.AbsolutePath);
-                            }
+                            string filename = GetFileName(response, url);
 
                             var destinationPath = Path.Combine(uploaddir, filename);
 
@@ -130,5 +114,22 @@ public class UploadController : ControllerBase
                 return BadRequest(new { message = ex.Message });
             }
         
+    }
+    private string GetFileName(HttpResponseMessage response, string url) {
+        string filename = null;
+
+        if (response.Content.Headers.ContentDisposition != null) {
+            var contentDisposition = response.Content.Headers.ContentDisposition;
+            if (!string.IsNullOrEmpty(contentDisposition.FileName)) {
+                filename = contentDisposition.FileName.Trim('\"');
+            }
+        }
+
+        if (filename == null) {
+            Uri uri = new Uri(url);
+            filename = Path.GetFileName(uri.AbsolutePath);
+        }
+
+        return filename ?? "filewithoutname.dat";
     }
 }
