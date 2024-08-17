@@ -103,10 +103,9 @@
 				let url = formElement.action;
 
 				try {
-					progress_url.textContent = "Download started... You can close the tab"
 					const res = await fetch(url, {method: "POST", body: formData});
 					if (res.ok) {
-						progress_url.textContent = "Download has finished"
+						progress_url.textContent = "Download has started..."
 						document.getElementById("uploadurl").value = "";
 						return;
 					}

@@ -69,22 +69,26 @@ public class UploadController : ControllerBase
     [HttpPost("upload_url")]
     public async Task<IActionResult> URLOnPostUploadAsync([FromForm] string url) {
         if (string.IsNullOrEmpty(url))
+        {
+            return BadRequest(new { message = "URL is required" });
+        }
+
+        PluginConfiguration? config = Plugin.Instance.Configuration;
+        string uploaddir = config.uploaddir;
+
+        if (!Directory.Exists(uploaddir))
+        {
+            return BadRequest(new { message = "Directory doesn't exist" });
+        }
+
+        if (!IsDirectoryWritable(uploaddir)) {
+            return BadRequest(new { message = "No permission to write in directory" });
+        }
+
+        Task.Run(async () => 
+        {
+            try
             {
-                return BadRequest(new { message = "URL is required" });
-            }
-        
-        try
-            {
-                PluginConfiguration? config = Plugin.Instance.Configuration;
-                string uploaddir = config.uploaddir;
-
-                if (!Directory.Exists(uploaddir))
-                {
-                    return BadRequest(new { message = "Directory doesn't exist" });
-                }
-
-
-
                 using (var client = _httpClientFactory.CreateClient())
                 {
                     using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
@@ -103,15 +107,16 @@ public class UploadController : ControllerBase
                             
                         }
                 }
-
-                return Ok(new { message = "Success" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                
             }
-        
+        });
+
+        return Ok(new { message = "Success" });
     }
+
     private string GetFileName(HttpResponseMessage response, string url) {
         string filename = null;
 
@@ -128,5 +133,22 @@ public class UploadController : ControllerBase
         }
 
         return filename ?? "filewithoutname.dat";
+    }
+
+    private bool IsDirectoryWritable(string dirPath, bool throwIfFails = false)
+    {
+        try
+        {
+            using (FileStream fs = new FileStream(Path.Combine(dirPath, Path.GetRandomFileName()), FileMode.Create, FileAccess.Write, FileShare.None, 1, FileOptions.DeleteOnClose))
+            { }
+            return true;
+        }
+        catch
+        {
+            if (throwIfFails)
+                throw;
+            else
+                return false;
+        }
     }
 }
