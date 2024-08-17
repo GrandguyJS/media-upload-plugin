@@ -14,6 +14,17 @@
                         </button>
                     </div>
                 </form>
+				<form id="RemoteURLUploadForm" enctype="multipart/form-data" action="/mediaupload/upload_url">
+                    <div class="inputContainer">
+						<h2>Download from URL</h2>
+						<input type="text" name="url" required id="uploadurl" is="emby-input" placeholder="https://download.com/file.mp4"/>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploadurlsubmit">
+                            <span id="progress_url">Upload</span>
+                        </button>
+                    </div>
+                </form>
 			</div>
         </div>
     </div> 	
@@ -74,10 +85,44 @@
 				progress.textContent = "Upload finished";
 				document.getElementById("uploadfile").value = "";
 				return;
-			})
+			});
 
 			document.getElementById("uploadfile").addEventListener("change", (event) => {
 				progress.textContent = "Upload";
+			});
+
+			/* Upload from URL */
+			let progress_url = document.getElementById("progress_url");
+			document.querySelector("#RemoteURLUploadForm").addEventListener("submit", async function(e) {
+				e.preventDefault();
+				
+				let formElement = document.getElementById("RemoteURLUploadForm");
+				let formData = new FormData();
+				formData.set("url", document.getElementById("uploadurl").value);
+
+				let url = formElement.action;
+
+				try {
+					const res = await fetch(url, {method: "POST", body: formData});
+					if (res.ok) {
+						progress_url.textContent = "Download has started"
+						document.getElementById("uploadurl").value = "";
+						return;
+					}
+					else {
+						const result = await res.json();
+						progress_url.textContent = result.message || "Download failed!";
+						return;
+					}
+				}
+				catch (error) {
+					progress_url.textContent = "Download failed!"
+					return;
+				}
+			});
+
+			document.getElementById("uploadurl").addEventListener("change", function() {
+				progress_url.textContent = "Upload";
 			})
 	</script>
 </div>
