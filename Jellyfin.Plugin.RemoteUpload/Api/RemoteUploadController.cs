@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
@@ -18,6 +19,13 @@ namespace Jellyfin.Plugin.RemoteUpload.Api;
 [Route("mediaupload")]
 public class UploadController : ControllerBase
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public UploadController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
     [HttpPost("upload")]
     public async Task<IActionResult> OnPostUploadAsync([FromForm] IFormFile file, [FromForm] int chunkIndex, [FromForm] int totalChunks)
     {
@@ -57,5 +65,70 @@ public class UploadController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+    [HttpPost("upload_url")]
+    public async Task<IActionResult> URLOnPostUploadAsync([FromForm] string url) {
+        if (string.IsNullOrEmpty(url))
+            {
+                return BadRequest(new { message = "URL is required" });
+            }
+        
+        try
+            {
+                PluginConfiguration? config = Plugin.Instance.Configuration;
+                string uploaddir = config.uploaddir;
+
+                if (!Directory.Exists(uploaddir))
+                {
+                    return BadRequest(new { message = "Directory doesn't exist" });
+                }
+
+
+
+                using (var client = _httpClientFactory.CreateClient())
+                {
+                    using (HttpResponseMessage response = await client.GetAsync(url))
+                        {
+                            response.EnsureSuccessStatusCode(); 
+
+                            string filename = null;
+
+                            if (response.Content.Headers.ContentDisposition != null)
+                            {
+                                var contentDisposition = response.Content.Headers.ContentDisposition;
+                                if (!string.IsNullOrEmpty(contentDisposition.FileName))
+                                {
+                                    filename = contentDisposition.FileName.Trim('\"');
+                                }
+                            }
+                            if (filename != null) {
+
+                            }
+                            else {
+                                Uri uri = new Uri(url);
+                                filename = System.IO.Path.GetFileName(uri.AbsolutePath);
+                            }
+
+                            var destinationPath = Path.Combine(uploaddir, filename);
+
+                            using (Stream contentStream = await response.Content.ReadAsStreamAsync())
+                            {
+                                // Create or overwrite the file at the destination path
+                                using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                                {
+                                    // Copy the content stream to the file stream
+                                    await contentStream.CopyToAsync(fileStream);
+                                }
+                            }
+                        }
+                }
+
+                return Ok(new { message = "Success" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        
     }
 }
