@@ -96,14 +96,11 @@ public class UploadController : ControllerBase
                             var destinationPath = Path.Combine(uploaddir, filename);
 
                             using (Stream contentStream = await response.Content.ReadAsStreamAsync())
+                            using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
                             {
-                                // Create or overwrite the file at the destination path
-                                using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                                {
-                                    // Copy the content stream to the file stream
-                                    await contentStream.CopyToAsync(fileStream);
-                                }
+                                await contentStream.CopyToAsync(fileStream);
                             }
+                            
                         }
                 }
 
