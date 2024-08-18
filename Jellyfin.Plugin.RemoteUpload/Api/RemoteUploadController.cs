@@ -21,7 +21,7 @@ namespace Jellyfin.Plugin.RemoteUpload.Api;
 public class UploadController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private static ConcurrentDictionary<string, (CancellationTokenSource cts, string filePath, string fileName)> _uploadTasks = new ConcurrentDictionary<string, (CancellationTokenSource, string, string)>();
+    private static ConcurrentDictionary<string, (CancellationTokenSource cts, string filePath, string fileName, long fileSize)> _uploadTasks = new ConcurrentDictionary<string, (CancellationTokenSource, string, string, long)>();
 
     public UploadController(IHttpClientFactory httpClientFactory)
         {
@@ -92,6 +92,7 @@ public class UploadController : ControllerBase
 
         string? filename = null;
         string? destinationPath = null;
+        long filesize = 0;
 
         var task = Task.Run(async () => 
         {
@@ -104,10 +105,11 @@ public class UploadController : ControllerBase
                         response.EnsureSuccessStatusCode(); 
 
                         filename = GetFileName(response, url);
+                        filesize = GetFileSize(response);
 
                         destinationPath = Path.Combine(uploaddir, filename);
 
-                        _uploadTasks.TryAdd(cancellationKey, (cts, destinationPath, filename)); // Add this task to uploadTasks
+                        _uploadTasks.TryAdd(cancellationKey, (cts, destinationPath, filename, filesize)); // Add this task to uploadTasks
 
                         using (Stream contentStream = await response.Content.ReadAsStreamAsync())
                         using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -121,7 +123,7 @@ public class UploadController : ControllerBase
             catch (Exception)
             { }
             finally {
-                _uploadTasks.TryRemove(cancellationKey, out _); // remove the task from uploadTasks
+                _uploadTasks.TryRemove(cancellationKey, out _); // remove the task from uploadTasks when download is finished
             }
         }, cts.Token);
 
@@ -153,6 +155,34 @@ public class UploadController : ControllerBase
         return filename ?? "filewithoutname.dat";
     }
 
+    private long GetFileSize(HttpResponseMessage response) {
+        try {
+            if (response.Content.Headers.TryGetValues("Content-Length", out var values))
+            {
+                var contentLength = values.FirstOrDefault();
+                if (long.TryParse(contentLength, out var fileSize))
+                {
+                    // We have a fileSize in bytes
+                    return fileSize;
+                }
+                else
+                {
+                    // fileSize is not a long, we return 0
+                    return 0;
+                }
+            }
+            else
+            {
+                // No filesize in headers
+                return 0;
+            }
+        }
+        catch (Exception ex) {
+            // Some error, we return 0
+            return 0;
+        }
+    }
+
     private bool IsDirectoryWritable(string dirPath, bool throwIfFails = false)
     {
         try
@@ -180,7 +210,7 @@ public class UploadController : ControllerBase
                 // This cancels the task, the file will also be deleted as in task.ContinueWith
                 taskInfo.cts.Cancel();
 
-                await Task.Delay(3000);
+                await Task.Delay(3000); // Wait three seconds to make sure, that the task is finished
                 if (System.IO.File.Exists(taskInfo.filePath)) {
                     System.IO.File.Delete(taskInfo.filePath);
                 }
@@ -202,7 +232,14 @@ public class UploadController : ControllerBase
     [HttpGet("get_tasks")]
     public IActionResult GetUploadTasks()
     {
-        var tasks = _uploadTasks.Select(task => new { Key = task.Key, FileName = task.Value.fileName });
+        var tasks = _uploadTasks.Select(task => new
+        { 
+            Key = task.Key,
+            FileName = task.Value.fileName, 
+            FileSize = task.Value.fileSize, 
+            FileSizeNow = new FileInfo(task.Value.filePath).Length
+        });
+
         return Ok(tasks);
     }
 }

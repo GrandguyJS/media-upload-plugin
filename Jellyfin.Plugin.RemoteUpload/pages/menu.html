@@ -157,8 +157,17 @@
 					// Each cancel button will have the cancellation token as their name and an onclick attribute to cancel the task
 					let task_div = document.createElement("div");
 					task_div.setAttribute("style", "display: flex; flex-direction: row; gap: 10px;")
+
 					let task = document.createElement("p");
 					task.innerText = tasks[i]["FileName"]
+
+					let task_progress = document.createElement("p");
+
+					let filesizenow = convertSize(parseInt(tasks[i]["FileSizeNow"]));
+					let filesize = convertSize(parseInt(tasks[i]["FileSize"]));
+
+					task_progress.innerText = filesizenow + " out of " + filesize;
+
 					let task_cancel = document.createElement("p");
 					task_cancel.innerText = "Cancel";
 					task_cancel.name = tasks[i]["Key"];
@@ -167,7 +176,9 @@
 
 					// Append both the task file name and the cancel button to the parent div
 					task_div.appendChild(task);
+					task_div.appendChild(task_progress);
 					task_div.appendChild(task_cancel);
+
 					// Append this parent div to the tasks div
 					curr_tasks.appendChild(task_div);
 				}
@@ -196,6 +207,17 @@
 				}
 				return;
 			}
-			/* Version 1.1.2 */
+
+			function convertSize(bytes) {
+				let size = 0;
+				let dict = ["Bytes", "KB", "MB", "GB", "TB", "PB", "Liar"]
+				while (bytes >= 1024 && size < dict.length - 1) {
+					bytes = bytes / 1024;
+					size++;
+				}
+				let final = bytes.toFixed(2) + ' ' + dict[size];
+				return final;
+			}
+			/* Version 1.1.3 */
 	</script>
 </div>
