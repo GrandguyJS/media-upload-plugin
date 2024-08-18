@@ -10,8 +10,7 @@ Who should use this plugin?
 2. 🤷 Family members who don't know how to use smb/other file upload systems
 
 # Reverse proxy setup
-If you are using a reverse-proxy, make sure, that you can upload 28MB chunks, by specifying the max allowed request body size.
-If you do not have access to your reverse proxy at this time, you can adjust the chunk size with `let chunk_size = {file_size in bytes}`. Warning: chunk_size cannot be larger than 28MB and don't set it too low, or your server will be flooded with POST requests.
+Your reverse-proxy should allow requests with a body size of around 30MB, as the client will upload 28MB file chunks at a time. You can set the body_size with the configuration below. If you do not have access to your reverse_proxy, you can set the chunksize to be below 1MB (default NGINX body size limit) with `let chunk_size = 900000` (0.9MB). But make sure that your server can handle multiple requests a second.
 ## NGINX
 ```
 location / {  
