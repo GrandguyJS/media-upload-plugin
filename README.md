@@ -25,11 +25,9 @@ location / {
     }
 ```
 
-# Error messages
-1. Make sure the client_max_body_size is configured to 30MB
-2. Directory doesn't exist Error
-3. No permission error: Jellyfin User/Group should be able to write files in directory
+# Known errors
+- Downloads from URL do not stop until the download is completed or you restart the server
+- If the API cannot resolve a filename, the downloaded file will get named `download.dat`
+- After updating the upload directory, please refresh the Upload page
 
-Thanks for using this plugin!
-
-
+Thank you for using this plugin
