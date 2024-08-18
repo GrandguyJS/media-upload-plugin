@@ -2,7 +2,7 @@
 With this plugin, you can remotely set an upload directory and upload files to it, all without touching the server.
 How to install:
 1. Add `https://raw.githubusercontent.com/GrandguyJS/media-upload-plugin/main/manifest.json` as a repository in Jellyfin
-2. Install latest RemoteUpload plugin (1.0.3)
+2. Install latest RemoteUpload plugin (1.1.1)
 3. Reboot Jellyfin Server
 
 Who should use this plugin?
@@ -10,6 +10,8 @@ Who should use this plugin?
 2. 🤷 Family members who don't know how to use smb/other file upload systems
 
 # Reverse proxy setup
+If you are using a reverse-proxy, make sure, that you can upload 28MB chunks, by specifying the max allowed request body size.
+If you do not have access to your reverse proxy at this time, you can adjust the chunk size with `let chunk_size = {file_size in bytes}`. Warning: chunk_size cannot be larger than 28MB and don't set it too low, or your server will be flooded with POST requests.
 ## NGINX
 ```
 location / {  
@@ -25,11 +27,9 @@ location / {
     }
 ```
 
-# Error messages
-1. Make sure the client_max_body_size is configured to 30MB
-2. Directory doesn't exist Error
-3. No permission error: Jellyfin User/Group should be able to write files in directory
+# Known errors
+- Downloads from URL do not stop until the download is completed or you restart the server
+- If the API cannot resolve a filename, the downloaded file will get named `download.dat`
+- After updating the upload directory, please refresh the Upload page
 
-Thanks for using this plugin!
-
-
+Thank you for using this plugin
