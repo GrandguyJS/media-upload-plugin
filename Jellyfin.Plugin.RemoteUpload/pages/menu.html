@@ -21,7 +21,7 @@
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploadurlsubmit">
-                            <span id="progress_url">Upload</span>
+                            <span id="progress_url">Download</span>
                         </button>
                     </div>
                 </form>
@@ -103,6 +103,7 @@
 				let url = formElement.action;
 
 				try {
+					progress_url.textContent = "Download queued..."
 					const res = await fetch(url, {method: "POST", body: formData});
 					if (res.ok) {
 						progress_url.textContent = "Download has started..."
@@ -122,7 +123,7 @@
 			});
 
 			document.getElementById("uploadurl").addEventListener("change", function() {
-				progress_url.textContent = "Upload";
+				progress_url.textContent = "Download";
 			})
 			/* Version 1.1 */
 	</script>
