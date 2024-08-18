@@ -3,10 +3,17 @@
         "category": "General",
         "guid": "b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6",
         "name": "RemoteUpload",
-        "description": "RemoteUpload",
+        "description": "Upload files directly to the Jellyfin-Server, or let the server automatically download files from an URL. Please read Github for more.",
         "owner": "grandguyjs",
         "overview": "remoteupload",
         "versions": [
+            {
+                "checksum": "88f5c429025c3c699b68a4923ce1b7dd",
+                "changelog": "1.1.1 Release - Invalid Download Error Handler",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.1.1/plugin.zip",
+                "version": "1.1.1.0"
+            },
             {
                 "checksum": "c63c5f34c90d0822c77822b593f33ac6",
                 "changelog": "1.1 Release - Full functionality - Upload file/URL",
