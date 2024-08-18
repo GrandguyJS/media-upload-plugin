@@ -84,7 +84,7 @@ public class UploadController : ControllerBase
         if (!IsDirectoryWritable(uploaddir)) {
             return BadRequest(new { message = "No permission to write in directory" });
         }
-
+        bool downloading = false;
         Task.Run(async () => 
         {
             try
@@ -110,10 +110,15 @@ public class UploadController : ControllerBase
             }
             catch (Exception ex)
             {
-                
+                downloading = false;
             }
         });
 
+        await Task.Delay(5000); // Wait until download starts
+
+        if (downloading != true) { // If there has been an error, in the download request, return a BadRequest
+            return BadRequest(new { message = "Download link not working" });
+        }
         return Ok(new { message = "Success" });
     }
 
