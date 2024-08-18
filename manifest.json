@@ -8,7 +8,7 @@
         "overview": "remoteupload",
         "versions": [
             {
-                "checksum": "88f5c429025c3c699b68a4923ce1b7dd",
+                "checksum": "832bb615513722e5137a3745e9f0a593",
                 "changelog": "1.1.1 Release - Invalid Download Error Handler",
                 "targetAbi": "10.9.9.0",
                 "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.1.1/plugin.zip",
