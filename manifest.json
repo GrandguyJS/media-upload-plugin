@@ -8,6 +8,13 @@
         "overview": "remoteupload",
         "versions": [
             {
+                "checksum": "533d62141878f4431e8a2bb3f89be766",
+                "changelog": "1.1.2 Release - Cancel URL download tasks - List URL download tasks",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.1.2/plugin.zip",
+                "version": "1.1.2.0"
+            },
+            {
                 "checksum": "832bb615513722e5137a3745e9f0a593",
                 "changelog": "1.1.1 Release - Invalid Download Error Handler",
                 "targetAbi": "10.9.9.0",
