@@ -14,7 +14,7 @@
                         </button>
                     </div>
                 </form>
-				<form id="RemoteURLUploadForm" enctype="multipart/form-data" action="/mediaupload/upload_url">
+				<form id="RemoteURLUploadForm" enctype="multipart/form-data" action="/mediaupload/upload_url" style="margin-top: 50px;">
                     <div class="inputContainer">
 						<h2>Download from URL</h2>
 						<input type="text" name="url" required id="uploadurl" is="emby-input" placeholder="https://download.com/file.mp4"/>
@@ -25,10 +25,27 @@
                         </button>
                     </div>
                 </form>
+				<form id="GetTasksForm" enctype="multipart/form-data" action="/mediaupload/get_tasks" style="margin-top: 50px;">
+                    <p>Tasks:</p>
+					<button is="emby-button" type="submit" class="raised button-submit block emby-button" style="width: max-content;">
+						<span id="progress_url">Refresh</span>
+					</button>
+                    <div class="current_tasks"></div>
+                </form>
 			</div>
         </div>
     </div> 	
 	<script>
+		async function load() {
+			let url = document.querySelector("#GetTasksForm").action
+			const res = await fetch(url, {method: "GET"});
+			let tasks = await res.json();
+
+			return tasks;
+		}
+
+		load();
+
 		var RemoteUploadConfig = {
 			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
 		};
@@ -124,6 +141,61 @@
 			document.getElementById("uploadurl").addEventListener("change", function() {
 				progress_url.textContent = "Download";
 			})
-			/* Version 1.1 */
+
+			document.querySelector("#GetTasksForm").addEventListener("submit", async function(e) {
+				// If the Refresh Tasks button gets pressed
+				e.preventDefault();
+
+				// Get all ongoing tasks with load()
+				let tasks = await load();
+				let curr_tasks = document.querySelector(".current_tasks");
+				curr_tasks.innerHTML = "";
+
+				// Append all tasks to the tasks div
+				for (let i = 0; i < tasks.length; i++) {
+					// Each task is another div which consits of the filename and a cancel button
+					// Each cancel button will have the cancellation token as their name and an onclick attribute to cancel the task
+					let task_div = document.createElement("div");
+					task_div.setAttribute("style", "display: flex; flex-direction: row; gap: 10px;")
+					let task = document.createElement("p");
+					task.innerText = tasks[i]["FileName"]
+					let task_cancel = document.createElement("p");
+					task_cancel.innerText = "Cancel";
+					task_cancel.name = tasks[i]["Key"];
+					task_cancel.style["cursor"] = "pointer";
+					task_cancel.setAttribute("onclick", "cancelTask(this)");
+
+					// Append both the task file name and the cancel button to the parent div
+					task_div.appendChild(task);
+					task_div.appendChild(task_cancel);
+					// Append this parent div to the tasks div
+					curr_tasks.appendChild(task_div);
+				}
+			})
+
+			async function cancelTask(param) {
+				// Create form data with the cancellation key
+				let dummyForm = new FormData()
+				dummyForm.set("cancellationKey", param.name)
+				try {
+					param.innerText = "Cancelling...";
+					param.removeAttribute("onclick");
+					// Request the cancel and get the result
+					const req = await fetch("/mediaupload/upload_cancel", {method: "POST", body: dummyForm});
+					const res = await req.json();
+					if (res.ok) {
+						param.innerText = "Cancelled successfully";
+					}
+					else {
+						param.innerText = res.message || "Something went wrong";
+					}
+					
+				}
+				catch (error) {
+					param.innerText = "Something went wrong";
+				}
+				return;
+			}
+			/* Version 1.1.1 */
 	</script>
 </div>
