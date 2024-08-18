@@ -34,6 +34,7 @@
 		};
 
 		let progress = document.getElementById("progress_file");
+		let chunk_size = 28000000;
 		
 		document.querySelector("#RemoteFileUploadForm")
 			.addEventListener("submit", async function(e) {
@@ -42,8 +43,6 @@
 				let formElement = document.getElementById("RemoteFileUploadForm");
 				let formData = new FormData(formElement);
 				let url = formElement.action;
-
-				const chunk_size = 28000000; // 28 MB in Bytes
 
 				for (let [key, file] of formData.entries()) {
 					let chunk_index = 0;
