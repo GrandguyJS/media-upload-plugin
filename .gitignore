@@ -4,3 +4,4 @@ Plugin.csx
 Jellyfin.Plugin.MyPlugin/obj
 Jellyfin.Plugin.Template/Jellyfin.Plugin.Template.csproj
 bin
+media-upload-plugin.sln
