@@ -30,5 +30,6 @@ location / {
 - Downloads from URL do not stop until the download is completed or you restart the server
 - If the API cannot resolve a filename, the downloaded file will get named `download.dat`
 - After updating the upload directory, please refresh the Upload page
+- Please make sure the file has 80KB, if not, the server will think, the download link is invalid
 
 Thank you for using this plugin
