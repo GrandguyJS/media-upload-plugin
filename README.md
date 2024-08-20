@@ -2,7 +2,7 @@
 With this plugin, you can remotely set an upload directory and upload files to it, all without touching the server.
 How to install:
 1. Add `https://raw.githubusercontent.com/GrandguyJS/media-upload-plugin/main/manifest.json` as a repository in Jellyfin
-2. Install latest RemoteUpload plugin (1.1.1)
+2. Install latest RemoteUpload plugin (1.1.3)
 3. Reboot Jellyfin Server
 
 Who should use this plugin?
