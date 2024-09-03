@@ -39,9 +39,21 @@
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploadurlsubmit">
-                            <span id="download_button">Download</span>
+							<span id="download_button">Download</span>
                         </button>
                     </div>
+                </form>
+				<form id="RemoteDirectory" enctype="multipart/form-data" action="/mediaupload/directory">
+                    <div class="inputContainer">
+                        <h2>Log files in directory</h2>
+                        <input type="text" name="path" required id="downloadpathfolder" is="emby-input" placeholder="Folder path"/>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploadurlsubmit">
+							<span id="directory_button">Show files</span>
+                        </button>
+                    </div>
+					<div id="folderContentDisplay"></div>
                 </form>
 			</div>
         </div>
@@ -266,6 +278,32 @@
                     return;
                 }
             });
+
+			document.querySelector("#RemoteDirectory").addEventListener("submit", async function(e) {
+				e.preventDefault();
+				const formData = new FormData(document.querySelector("#RemoteDirectory"));
+				const res = await fetch(document.querySelector("#RemoteDirectory").action, {method: "POST", body: formData})
+				try {
+					if (res.ok) {
+						const files = await res.json();
+						for (var i = 0; i<files.length; i++) {
+							let element = document.createElement("ul");
+							element.innerHTML = files[i];
+							document.querySelector("#folderContentDisplay").appendChild(element);
+						}
+						return;
+					}
+					else {
+						const result = await res.json();
+						document.querySelector("#directory_button").innerText = result.message || "Server error!";
+						return;
+					}
+				}
+				catch {
+					document.querySelector("#directory_button").textContent = "Local error!"
+                    return;
+				}
+			})
 			/* Version 1.1.3 */
 	</script>
 </div>
