@@ -137,8 +137,7 @@ public class UploadController : ControllerBase
         return Ok(new { message = "Success" });
     }
 
-    [HttpPost]
-    [Route("download")]
+    [HttpPost("download")]
     public async Task<IActionResult> DownloadFile([FromForm] string path)
     {
         if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path))
