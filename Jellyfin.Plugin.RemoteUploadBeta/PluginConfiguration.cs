@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Plugins;
 
-namespace Jellyfin.Plugin.RemoteUpload;
+namespace Jellyfin.Plugin.RemoteUploadBeta;
 
 /// <summary>
 /// Represents the configuration settings for the RemoteUpload plugin.

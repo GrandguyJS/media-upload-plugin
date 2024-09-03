@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>Jellyfin.Plugin.RemoteUpload</RootNamespace>
+    <RootNamespace>Jellyfin.Plugin.RemoteUploadBeta</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

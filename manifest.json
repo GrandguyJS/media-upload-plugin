@@ -5,7 +5,7 @@
         "name": "RemoteUploadBeta",
         "description": "Beta - Upload files directly to the Jellyfin-Server, or let the server automatically download files from an URL. Please read Github for more.",
         "owner": "grandguyjs",
-        "overview": "remoteupload",
+        "overview": "remoteuploadbeta",
         "versions": [
             {
                 "checksum": "68c75d9601f943f4e260de38196690a0",

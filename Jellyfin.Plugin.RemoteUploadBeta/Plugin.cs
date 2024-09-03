@@ -6,7 +6,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Plugin.RemoteUpload;
+namespace Jellyfin.Plugin.RemoteUploadBeta;
 
 /// <summary>
 /// Represents the RemoteUpload plugin for Jellyfin.
