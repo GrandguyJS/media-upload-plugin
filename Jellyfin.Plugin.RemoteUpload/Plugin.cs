@@ -29,12 +29,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <summary>
     /// Gets the name of the plugin.
     /// </summary>
-    public override string Name => "RemoteUpload";
+    public override string Name => "RemoteUploadBeta";
 
     /// <summary>
     /// Gets the unique identifier for the plugin.
     /// </summary>
-    public override Guid Id => Guid.Parse("b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6");
+    public override Guid Id => Guid.Parse("b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a5");
 
     /// <summary>
     /// Gets the description of the plugin.
@@ -64,7 +64,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             
             new PluginPageInfo
             {
-                Name = @"RemoteFileUpload",
+                Name = @"RemoteFileUpload - Beta",
                 EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Pages.menu.html", GetType().Namespace),
                 EnableInMainMenu = true
             }
