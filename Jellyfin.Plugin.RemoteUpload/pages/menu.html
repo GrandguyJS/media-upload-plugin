@@ -25,6 +25,17 @@
                         </button>
                     </div>
                 </form>
+				<form id="RemoteDownload" enctype="multipart/form-data" action="/mediaupload/download">
+                    <div class="inputContainer">
+						<h2>Download from server</h2>
+						<input type="text" name="path" required id="downloadpath" is="emby-input" placeholder="File path"/>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button" id="uploadurlsubmit">
+                            <span id="download_button">Download</span>
+                        </button>
+                    </div>
+                </form>
 			</div>
         </div>
     </div> 	
@@ -123,7 +134,43 @@
 
 			document.getElementById("uploadurl").addEventListener("change", function() {
 				progress_url.textContent = "Upload";
-			})
-			/* Version 1.1 */
+			});
+			
+			/* Download */
+			remoteDownload = document.querySelector("#RemoteDownload");
+			remoteDownload.addEventListener("submit", async function(e) {
+				e.preventDefault();
+
+				let formData = new FormData(remoteDownload);
+				let url = remoteDownload.action;
+
+				try {
+					const res = await fetch(url, {method: "POST", body: formData});
+
+					if (res.ok) {
+						document.querySelector("#download_button").innerText = "Downloading..."
+						const blob = await res.blob(); // Get the file as a blob
+						const downloadUrl = window.URL.createObjectURL(blob);
+						const a = document.createElement("a");
+						a.style.display = "none";
+						a.href = downloadUrl;
+						a.download = formData.get("path").split('/').pop(); // Set the filename
+						document.body.appendChild(a);
+						a.click();
+						window.URL.revokeObjectURL(downloadUrl);
+						document.querySelector("#download_button").innerText = "Download";
+						return;
+					}
+					else {
+						const result = await res.json();
+						document.querySelector("#download_button").textContent = result.message || "Download failed!";
+						return;
+					}
+				}
+				catch (error) {
+					document.querySelector("#download_button").textContent = "Download failed!"
+					return;
+				}
+			});
 	</script>
 </div>
