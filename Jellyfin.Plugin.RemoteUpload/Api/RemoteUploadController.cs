@@ -137,6 +137,51 @@ public class UploadController : ControllerBase
         return Ok(new { message = "Success" });
     }
 
+    [HttpPost]
+    [Route("download")]
+    public async Task<IActionResult> DownloadFile([FromForm] string path)
+    {
+        if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path))
+        {
+            return BadRequest(new { message = "File not found!" });
+        }
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(path, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        var contentType = "application/octet-stream";
+        var fileName = Path.GetFileName(path);
+
+        return File(memory, contentType, fileName);
+    }
+
+    [HttpPost]
+    [Route("directory")]
+    public IActionResult ListFolderContent([FromForm] string path)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+            {
+                return BadRequest(new { message = "Folder not found!" });
+            }
+
+            var files = Directory.GetFiles(path).Select(Path.GetFileName).ToList();
+
+            return Ok(files);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception details
+            Console.WriteLine($"Error: {ex.Message}");
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
     private string GetFileName(HttpResponseMessage response, string url) {
         string? filename = null;
 
