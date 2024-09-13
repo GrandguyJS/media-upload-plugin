@@ -1,0 +1,12 @@
+// Save all links to file
+const links = Array.from(document.querySelectorAll('a'));
+const downloadLinks = links.map(link => link.href);
+const blob = new Blob([downloadLinks.join('\n')], { type: 'text/plain' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'download_links.txt';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);

@@ -68,6 +68,7 @@ public class UploadController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
     [HttpPost("upload_url")]
     public async Task<IActionResult> URLOnPostUploadAsync([FromForm] string url) {
         if (string.IsNullOrEmpty(url))
@@ -136,6 +137,83 @@ public class UploadController : ControllerBase
             {
                 return BadRequest(new { message = "Download link not working" });
             }
+        }
+
+        return Ok(new { message = "Success" });
+    }
+
+    [HttpPost("upload_bulk_url")]
+    public async Task<IActionResult> URLOnPostBulkUploadAsync([FromForm] List<string> urls) {
+        for (int i = 0; i<urls.Count; i++) {
+            if (string.IsNullOrEmpty(urls[i]))
+            {
+                return BadRequest(new { message = "URL is required" });
+            }
+        }
+
+        PluginConfiguration? config = Plugin.Instance.Configuration;
+        string uploaddir = config.uploaddir;
+
+        if (!Directory.Exists(uploaddir))
+        {
+            return BadRequest(new { message = "Directory doesn't exist" });
+        }
+
+        if (!IsDirectoryWritable(uploaddir)) {
+            return BadRequest(new { message = "No permission to write in directory" });
+        }
+
+        string cancellationKey = "";
+        var cts = new CancellationTokenSource();
+
+        string? filename = null;
+        string? destinationPath = null;
+        string ex = "";
+        long filesize = 0;
+        bool started = false;
+
+        var task = Task.Run(async () => 
+        {
+            foreach (var url in urls) {
+                cancellationKey = Guid.NewGuid().ToString();
+                try
+                {
+                    using (var client = _httpClientFactory.CreateClient())
+                    {
+                        using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token))
+                        {
+                            response.EnsureSuccessStatusCode(); 
+
+                            filename = GetFileName(response, url);
+                            filesize = GetFileSize(response);
+
+                            destinationPath = Path.Combine(uploaddir, filename);
+
+                            _uploadTasks.TryAdd(cancellationKey, (cts, destinationPath, filename, filesize)); // Add this task to uploadTasks
+                            started=true;
+
+                            using (Stream contentStream = await response.Content.ReadAsStreamAsync())
+                            using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                            {
+                                await contentStream.CopyToAsync(fileStream, cts.Token);
+                            }
+                            
+                        }
+                    }
+                }
+                catch (Exception e)
+                { 
+                    ex=e.Message;
+                }
+                finally {
+                    _uploadTasks.TryRemove(cancellationKey, out _); // remove the task from uploadTasks when download is finished
+                }
+            }
+        }, cts.Token);
+
+        await Task.Delay(2000);
+        if (!started) {
+            return BadRequest(new { message = ex });
         }
 
         return Ok(new { message = "Success" });
