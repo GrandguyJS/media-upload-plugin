@@ -226,7 +226,7 @@ public class UploadController : ControllerBase
                 return 0;
             }
         }
-        catch (Exception ex) {
+        catch (Exception) {
             // Some error, we return 0
             return 0;
         }
