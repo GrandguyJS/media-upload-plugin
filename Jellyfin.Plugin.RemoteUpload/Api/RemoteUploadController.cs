@@ -145,6 +145,10 @@ public class UploadController : ControllerBase
             if (!string.IsNullOrEmpty(contentDisposition.FileName)) {
                 filename = contentDisposition.FileName.Trim('\"');
             }
+            if (!string.IsNullOrEmpty(contentDisposition.FileNameStar))
+            {
+                filename = contentDisposition.FileNameStar.Trim('\"');
+            }
         }
 
         if (filename == null) {
@@ -152,7 +156,7 @@ public class UploadController : ControllerBase
             filename = Path.GetFileName(uri.AbsolutePath);
         }
 
-        return filename ?? "filewithoutname.dat";
+        return filename ?? "filewithoutname.mp4";
     }
 
     private long GetFileSize(HttpResponseMessage response) {
