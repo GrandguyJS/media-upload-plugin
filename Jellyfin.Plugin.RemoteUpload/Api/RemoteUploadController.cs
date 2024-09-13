@@ -127,11 +127,15 @@ public class UploadController : ControllerBase
             }
         }, cts.Token);
 
-        await Task.Delay(5000); // Wait until download starts
+        await Task.Delay(500); // Wait until download starts
 
-        if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key
+        if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key, wait 3 seconds
         {
-            return BadRequest(new { message = "Download link not working" });
+            await Task.Delay(1000);
+            if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key
+            {
+                return BadRequest(new { message = "Download link not working" });
+            }
         }
 
         return Ok(new { message = "Success" });

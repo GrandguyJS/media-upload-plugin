@@ -25,6 +25,13 @@
                         </button>
                     </div>
                 </form>
+				<form id="RemoteBulkURLUploadForm" enctype="multipart/form-data" style="margin-top: 50px;" action="/mediaupload/upload_url">
+                    <div>
+						<label is="emby-button" class="raised button-submit block emby-button" for="uploadbulkurlsubmit" id="bulkprogress_url">Download all links from txt</label>
+                        <input type="file" id="uploadbulkurlsubmit" style="display: none;" onchange="bulkDownload()">
+						<input type="submit" style="display: none;">
+                    </div>
+                </form>
 				<form id="GetTasksForm" enctype="multipart/form-data" action="/mediaupload/get_tasks" style="margin-top: 50px;">
                     <p>Tasks:</p>
 					<button is="emby-button" type="submit" class="raised button-submit block emby-button" style="width: max-content;">
@@ -160,6 +167,73 @@
 					return;
 				}
 			});
+
+			let bulkprogress_url = document.querySelector("#bulkprogress_url");
+
+			function readFileAsText(file) {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+
+					reader.onload = function(event) {
+						resolve(event.target.result);
+					};
+
+					reader.onerror = function(event) {
+						reject(event.target.error);
+					};
+
+					reader.readAsText(file);
+				});
+			}
+			let links = [];
+			async function bulkDownload() {
+				const fileInput = document.querySelector("#uploadbulkurlsubmit");
+
+				if (fileInput.files.length > 0) {
+					const file = fileInput.files[0];
+					
+					try {
+						const fileContent = await readFileAsText(file);
+						links = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+						// Reset the form after processing the file
+						document.querySelector("#RemoteBulkURLUploadForm").reset();
+					} catch (error) {
+						console.error('Error processing file:', error);
+					}
+				} else {
+					alert("No file selected!");
+				}
+				
+				let formElement = document.getElementById("RemoteBulkURLUploadForm");
+				let url = formElement.action;
+				let failed = []
+
+				for (var i = 0; i<links.length; i++) {
+					let formData = new FormData();
+					formData.set("url", links[i]);
+					try {
+						const res = await fetch(url, {method: "POST", body: formData});
+						if (res.ok) {
+							bulkprogress_url.textContent = `Downloads ${i} has started...`;
+						}
+						else {
+							failed.append(i)
+							const result = await res.json();
+							bulkprogress_url.textContent = result.message || `Download ${i} failed!`;
+						}
+					}
+					catch (error) {
+						bulkprogress_url.textContent = "Download failed!"
+					}
+				}
+				if (failed.length > 0) {
+					bulkprogress_url.textContent = `Downloads ${failed} failed!`;
+				}
+				else {
+					bulkprogress_url.textContent = `All downloads started successfully!`;
+				}
+			};
 
 			document.getElementById("uploadurl").addEventListener("change", function() {
 				progress_url.textContent = "Download";
