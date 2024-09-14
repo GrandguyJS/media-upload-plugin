@@ -252,7 +252,14 @@ public class UploadController : ControllerBase
                 return BadRequest(new { message = "Folder not found!" });
             }
 
-            var files = Directory.GetFiles(path).Select(Path.GetFileName).ToList();
+            List<string> files = new List<string>();
+
+            foreach (string folder in Directory.GetDirectories(path)) {
+                files.Add(Path.GetFileName(folder)+"/");
+            }
+            foreach (string file in Directory.GetFiles(path)) {
+                files.Add(Path.GetFileName(file));
+            }
 
             return Ok(files);
         }
