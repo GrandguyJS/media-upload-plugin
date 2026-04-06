@@ -22,8 +22,6 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
-
-        ConfigurationChanged += OnConfigurationChanged;
     }
 
     /// <summary>
@@ -69,9 +67,5 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
                 EnableInMainMenu = true
             }
         };
-    }
-
-    private void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
-    {
     }
 }
