@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Mime;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Api;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,10 +20,19 @@ public class UploadController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private static ConcurrentDictionary<string, (CancellationTokenSource cts, string filePath, string fileName, long fileSize)> _uploadTasks = new ConcurrentDictionary<string, (CancellationTokenSource, string, string, long)>();
+    PluginConfiguration? config;
+    private string uploaddir;
 
     public UploadController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
+            config = Plugin.Instance.Configuration;
+            uploaddir = config.uploaddir;
+
+            if (!Directory.Exists(uploaddir))
+            {
+                Directory.CreateDirectory(uploaddir);
+            }
         }
 
     [HttpPost("upload")]
@@ -34,16 +40,10 @@ public class UploadController : ControllerBase
     {
         try
         {
-            PluginConfiguration? config = Plugin.Instance.Configuration;
-            string uploaddir = config.uploaddir;
-
-            if (!Directory.Exists(uploaddir))
-            {
-                Directory.CreateDirectory(uploaddir);
-            }
+            string sanitizedFileName = Path.GetFileName(file.FileName);
 
             if (file.Length > 0) {
-                var tempFilePath = Path.Combine(uploaddir, $"{file.FileName}.part");
+                string tempFilePath = Path.Combine(uploaddir, $"{sanitizedFileName}.part");
 
                 using (var stream = new FileStream(tempFilePath, chunkIndex == 0 ? FileMode.Create : FileMode.Append))
                 {
@@ -53,7 +53,7 @@ public class UploadController : ControllerBase
                 if (chunkIndex + 1 == totalChunks)
                 {
                     // All chunks uploaded, rename the temporary file to the original filename
-                    var finalFilePath = Path.Combine(uploaddir, file.FileName);
+                    var finalFilePath = Path.Combine(uploaddir, sanitizedFileName);
                     if (System.IO.File.Exists(finalFilePath))
                     {
                         System.IO.File.Delete(finalFilePath);
@@ -62,7 +62,7 @@ public class UploadController : ControllerBase
                 }
             }
 
-            return Ok(new { name = file.FileName, chunk = chunkIndex });
+            return Ok(new { name = sanitizedFileName, chunk = chunkIndex });
         }
         catch (Exception ex) // Catch any other exceptions
         {
@@ -77,14 +77,6 @@ public class UploadController : ControllerBase
             return BadRequest(new { message = "URL is required" });
         }
 
-        PluginConfiguration? config = Plugin.Instance.Configuration;
-        string uploaddir = config.uploaddir;
-
-        if (!Directory.Exists(uploaddir))
-        {
-            Directory.CreateDirectory(uploaddir);
-        }
-
         if (!IsDirectoryWritable(uploaddir)) {
             return BadRequest(new { message = "No permission to write in directory" });
         }
@@ -95,6 +87,8 @@ public class UploadController : ControllerBase
         string? filename = null;
         string? destinationPath = null;
         long filesize = 0;
+
+        string ex = "";
 
         var task = Task.Run(async () => 
         {
@@ -122,25 +116,27 @@ public class UploadController : ControllerBase
                     }
                 }
             }
-            catch (Exception)
-            { }
+            catch (Exception e)
+            {
+                ex = e.Message;
+            }
             finally {
                 _uploadTasks.TryRemove(cancellationKey, out _); // remove the task from uploadTasks when download is finished
             }
         }, cts.Token);
 
-        await Task.Delay(500); // Wait until download starts
+        await Task.Delay(500); // Wait 500ms until download starts
 
-        if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key, wait 3 seconds
+        if (!_uploadTasks.ContainsKey(cancellationKey)) // If download hasn't started, wait 3 seconds more
         {
-            await Task.Delay(1000);
+            await Task.Delay(3000);
             if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key
             {
-                return BadRequest(new { message = "Download link not working" });
+                return BadRequest(new { message = ex });
             }
         }
 
-        return Ok(new { message = "Success" });
+        return Ok(new { message = "Download started" });
     }
 
     [HttpPost("upload_bulk_url")]
@@ -150,14 +146,6 @@ public class UploadController : ControllerBase
             {
                 return BadRequest(new { message = "URL is required" });
             }
-        }
-
-        PluginConfiguration? config = Plugin.Instance.Configuration;
-        string uploaddir = config.uploaddir;
-
-        if (!Directory.Exists(uploaddir))
-        {
-            Directory.CreateDirectory(uploaddir);
         }
 
         if (!IsDirectoryWritable(uploaddir)) {
@@ -171,7 +159,6 @@ public class UploadController : ControllerBase
         string? destinationPath = null;
         string ex = "";
         long filesize = 0;
-        bool started = false;
 
         var task = Task.Run(async () => 
         {
@@ -191,7 +178,6 @@ public class UploadController : ControllerBase
                             destinationPath = Path.Combine(uploaddir, filename);
 
                             _uploadTasks.TryAdd(cancellationKey, (cts, destinationPath, filename, filesize)); // Add this task to uploadTasks
-                            started=true;
 
                             using (Stream contentStream = await response.Content.ReadAsStreamAsync())
                             using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -212,12 +198,18 @@ public class UploadController : ControllerBase
             }
         }, cts.Token);
 
-        await Task.Delay(2000);
-        if (!started) {
-            return BadRequest(new { message = ex });
+        await Task.Delay(500); // Wait 500ms until download starts
+
+        if (!_uploadTasks.ContainsKey(cancellationKey)) // If download hasn't started, wait 3 seconds more
+        {
+            await Task.Delay(3000);
+            if (!_uploadTasks.ContainsKey(cancellationKey)) // If download has started, there should be a cancellation key
+            {
+                return BadRequest(new { message = ex });
+            }
         }
 
-        return Ok(new { message = "Success" });
+        return Ok(new { message = "Download started" });
     }
 
     [HttpPost]
@@ -266,10 +258,52 @@ public class UploadController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log the exception details
-            Console.WriteLine($"Error: {ex.Message}");
-            return StatusCode(500, new { message = "Internal server error." });
+            return BadRequest(new { message = ex });
         }
+    }
+
+    // Cancel a URL download
+    [HttpPost("upload_cancel")]
+    public async Task<IActionResult> CancelUpload([FromForm] string cancellationKey)
+    {
+        try {
+            if (_uploadTasks.TryRemove(cancellationKey, out var taskInfo))
+            {
+                // This cancels the task, the file will also be deleted as in task.ContinueWith
+                taskInfo.cts.Cancel();
+
+                await Task.Delay(1000); // Wait one second to make sure, that the task has finished
+                // Delete the file
+                if (System.IO.File.Exists(taskInfo.filePath)) {
+                    System.IO.File.Delete(taskInfo.filePath);
+                }
+
+                return Ok(new { message = "Upload cancelled", filename = taskInfo.fileName});
+            }
+            else
+            {
+                return BadRequest(new { message = "Task doesn't exist" });
+            }
+        }
+        catch (Exception ex) {
+            return BadRequest(new { message = ex.Message });
+        }
+        
+    }
+
+    // Gets all running tasks
+    [HttpGet("get_tasks")]
+    public IActionResult GetUploadTasks()
+    {
+        var tasks = _uploadTasks.Select(task => new
+        { 
+            Key = task.Key,
+            FileName = task.Value.fileName, 
+            FileSize = task.Value.fileSize, 
+            FileSizeNow = new FileInfo(task.Value.filePath).Length
+        });
+
+        return Ok(tasks);
     }
 
     private string GetFileName(HttpResponseMessage response, string url) {
@@ -337,48 +371,5 @@ public class UploadController : ControllerBase
             else
                 return false;
         }
-    }
-
-    // Cancel a URL download
-    [HttpPost("upload_cancel")]
-    public async Task<IActionResult> CancelUpload([FromForm] string cancellationKey)
-    {
-        try {
-            if (_uploadTasks.TryRemove(cancellationKey, out var taskInfo))
-            {
-                // This cancels the task, the file will also be deleted as in task.ContinueWith
-                taskInfo.cts.Cancel();
-
-                await Task.Delay(3000); // Wait three seconds to make sure, that the task is finished
-                if (System.IO.File.Exists(taskInfo.filePath)) {
-                    System.IO.File.Delete(taskInfo.filePath);
-                }
-
-                return Ok(new { message = "Upload canceled", filename = taskInfo.fileName});
-            }
-            else
-            {
-                return BadRequest(new { message = "Task doesn't exist" });
-            }
-        }
-        catch (Exception ex) {
-            return BadRequest(new { message = ex.Message });
-        }
-        
-    }
-
-    // Gets all running tasks
-    [HttpGet("get_tasks")]
-    public IActionResult GetUploadTasks()
-    {
-        var tasks = _uploadTasks.Select(task => new
-        { 
-            Key = task.Key,
-            FileName = task.Value.fileName, 
-            FileSize = task.Value.fileSize, 
-            FileSizeNow = new FileInfo(task.Value.filePath).Length
-        });
-
-        return Ok(tasks);
     }
 }
