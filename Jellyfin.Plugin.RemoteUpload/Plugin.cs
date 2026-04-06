@@ -39,7 +39,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <summary>
     /// Gets the description of the plugin.
     /// </summary>
-    public override string Description => "A sample plugin for Jellyfin.";
+    public override string Description => "Versatile Jellyfin media-manager that enhances remote features like remote downloads, remote file uploads, direct file download from URL, bulk direct download queues from URLs, directory browsing and more.";
 
     /// <summary>
     /// Gets the plugin instance.
