@@ -45,10 +45,6 @@
                 pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
             };
 
-            document.querySelector(".RemoteUploadConfigPage").addEventListener("pageshow", async function () {
-                updateUI();
-            });
-
             async function fetchWithAuth(url, method, body) {
                 const reqInit = {
                     method: method,
@@ -60,6 +56,10 @@
 
                 return await fetch(url, reqInit);
             }
+
+            document.querySelector(".RemoteUploadConfigPage").addEventListener("pageshow", async function () {
+                updateUI();
+            });
 
             function updateUI() {
                 ApiClient.getPluginConfiguration(RemoteUploadConfig.pluginUniqueId).then(function (config) {
@@ -146,11 +146,17 @@
                 return false;
             });
 
+            document.getElementById("uploadpathfolder").addEventListener("input", function() {
+                        document.querySelector("#directory_button").innerText = "Save";
+            });
+
             document.querySelector("#SetUploadDirectory").addEventListener("submit", async function(e) {
                 e.preventDefault();
                 await listUploadDirectory();
-            })
+            });
+
             async function listUploadDirectory() {
+                try {
                     const scrollTop = window.scrollY;
 
                     const pathInput = document.getElementById("uploadpathfolder");
@@ -217,6 +223,7 @@
                             const isFolder = path.endsWith("/");
                             
                             if (!isFolder) {
+                                // Only show directories when setting upload folder
                                 continue;
                             }
 
@@ -263,6 +270,7 @@
                             document.querySelector("#uploadFolderContentDisplay").appendChild(element);
                         }
                         window.scrollTo(0, scrollTop);
+                        document.querySelector("#directory_button").innerText = "Save";
                         
                         return;
                     }
@@ -271,6 +279,11 @@
                         document.querySelector("#directory_button").innerText = result.message || "Server error!";
                         return;
                     }
+                }
+                catch {
+                    document.querySelector("#directory_button").textContent = "Local error!"
+                    return;
+                }
             }
         </script>
     </div>

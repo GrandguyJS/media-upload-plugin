@@ -54,7 +54,7 @@
 					</button>
 				</div>
 			</form>
-			<form id="RemoteBulkURLUploadForm" enctype="multipart/form-data" style="margin-top: 50px;" action="/mediaupload/upload_bulk_url">
+			<form id="RemoteBulkURLUploadForm" enctype="multipart/form-data" style="margin-top: 20px;" action="/mediaupload/upload_bulk_url">
 				<div>
 					<label is="emby-button" class="raised button-submit block emby-button" for="uploadbulkurlsubmit" id="bulkprogress_url">Download all links from txt</label>
 					<input type="file" id="uploadbulkurlsubmit" style="display: none;" onchange="bulkDownload()">
@@ -68,20 +68,9 @@
 				</button>
 				<div class="current_tasks"></div>
 			</form>
-			<form id="RemoteDownload" enctype="multipart/form-data" action="/mediaupload/download">
-				<div class="inputContainer">
-					<h2>Download from server</h2>
-					<input type="text" name="path" required id="downloadpath" is="emby-input" class="emby-input" placeholder="File path"/>
-				</div>
-				<div>
-					<button is="emby-button" type="submit" class="raised button-submit block emby-button">
-						<span id="download_button">Download</span>
-					</button>
-				</div>
-			</form>
 			<form id="RemoteDirectory" enctype="multipart/form-data" action="/mediaupload/directory">
 				<div class="inputContainer">
-					<h2>Log files in directory</h2>
+					<h2>Download files from server</h2>
 					<div style="display: flex; align-items: center;">
 						<div style="flex-grow:1;">
 							<label class="inputLabel inputLabel-float inputLabelUnfocused" for="downloadpathfolder">Folder</label>
@@ -96,8 +85,7 @@
 				<div id="folderContentDisplay" class="results paperList" style="margin-top: 1em; max-height: 300px; overflow-y: auto;">
 					<!-- Files/Folders get inserted here by JS -->
 				</div>
-
-				<input type="hidden" id="downloadpath" name="downloadpath" />
+				<p>Download Status: <span id="download_status">idle</span></p>
 			</form>
         </div>
     </div> 	
@@ -106,9 +94,20 @@
 			pluginUniqueId: 'b5a2d6b3-c5f4-4f88-aed4-5f3e9877d0a6',
 		};
 
+		async function fetchWithAuth(url, method, body) {
+			const reqInit = {
+				method: method,
+				headers: {
+					Authorization: "MediaBrowser Token=" + ApiClient.accessToken(),
+				},
+				body: body,
+			};
+
+			return await fetch(url, reqInit);
+		}
+
 		document.querySelector(".RemoteUploadConfigPage").addEventListener("pageshow", async function () {
 			updateUI();
-			await load();
 		});
 
 		function updateUI() {
@@ -196,10 +195,15 @@
 			return false;
 		});
 
+		document.getElementById("uploadpathfolder").addEventListener("input", function() {
+			document.querySelector("#directory_button").innerText = "Save";
+		});
+
 		document.querySelector("#SetUploadDirectory").addEventListener("submit", async function(e) {
 			e.preventDefault();
 			await listUploadDirectory();
-		})
+		});
+
 		async function listUploadDirectory() {
 			try {
 				const scrollTop = window.scrollY;
@@ -268,6 +272,7 @@
 						const isFolder = path.endsWith("/");
 						
 						if (!isFolder) {
+							// Only show directories when setting upload folder
 							continue;
 						}
 
@@ -314,6 +319,7 @@
 						document.querySelector("#uploadFolderContentDisplay").appendChild(element);
 					}
 					window.scrollTo(0, scrollTop);
+					document.querySelector("#directory_button").innerText = "Save";
 					
 					return;
 				}
@@ -329,435 +335,418 @@
 			}
 		}
 
-		async function fetchWithAuth(url, method, body) {
-			const reqInit = {
-				method: method,
-				headers: {
-					Authorization: "MediaBrowser Token=" + ApiClient.accessToken(),
-				},
-				body: body,
-			};
+		let progress = document.getElementById("progress_file");
+		let chunk_size = 28000000;
 
-			return await fetch(url, reqInit);
+		document.querySelector("#RemoteFileUploadForm").addEventListener("submit", async function(e) {
+			e.preventDefault();
+
+			let formElement = document.getElementById("RemoteFileUploadForm");
+			let formData = new FormData(formElement);
+			let url = formElement.action;
+
+			for (let [key, file] of formData.entries()) {
+				let chunk_index = 0;
+				let start = 0;
+
+				if (file instanceof File) { 
+					while (start < file.size) {
+						const chunk = file.slice(start, start+chunk_size);
+						let chunk_form = new FormData();
+						chunk_form.set("file", chunk, file.name)
+						chunk_form.set("chunkIndex", chunk_index)
+						chunk_form.set("totalChunks", Math.ceil(file.size / chunk_size))
+
+						// Request
+						try {
+							const res = await fetchWithAuth(url, "POST", chunk_form);
+							if (res.ok) {
+								console.log("Successfully saved chunk " + chunk_index);
+								let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
+								progress.textContent = file.name + " " + progress_value.toString() + "%"
+								start += chunk_size
+								chunk_index++;
+							}
+							else {
+								const result = await res.json();
+								progress.textContent = result.message || 'Upload failed!';
+								return;
+							}
+							
+						} catch (error) {
+							progress.textContent = "Upload failed!"
+							console.log('Error:', error);
+							return;
+						}
+					}
+				}
+			}
+			/* If upload finished successfully */
+			progress.textContent = "Upload finished";
+			document.getElementById("uploadfile").value = "";
+			return;
+		});
+
+		document.getElementById("uploadfile").addEventListener("input", (event) => {
+			progress.textContent = "Upload";
+		});
+
+		/* Upload from URL */
+		let progress_url = document.getElementById("progress_url");
+		document.querySelector("#RemoteURLUploadForm").addEventListener("submit", async function(e) {
+			e.preventDefault();
+			
+			let formElement = document.getElementById("RemoteURLUploadForm");
+			let formData = new FormData();
+			formData.set("url", document.getElementById("uploadurl").value);
+
+			let url = formElement.action;
+
+			try {
+				progress_url.textContent = "Download queued..."
+				const res = await fetchWithAuth(url, "POST", formData)
+				if (res.ok) {
+					progress_url.textContent = "Download has started..."
+					document.getElementById("uploadurl").value = "";
+					return;
+				}
+				else {
+					const result = await res.json();
+					progress_url.textContent = result.message || "Download failed!";
+					return;
+				}
+			}
+			catch (error) {
+				progress_url.textContent = "Download failed!"
+				return;
+			}
+		});
+
+		let bulkprogress_url = document.querySelector("#bulkprogress_url");
+		function readFileAsText(file) {
+			return new Promise((resolve, reject) => {
+				const reader = new FileReader();
+
+				reader.onload = function(event) {
+					resolve(event.target.result);
+				};
+
+				reader.onerror = function(event) {
+					reject(event.target.error);
+				};
+
+				reader.readAsText(file);
+			});
+		}
+		
+		const fileInput = document.querySelector("#uploadbulkurlsubmit");
+		async function bulkDownload() {
+			let links = [];
+
+			if (fileInput.files.length > 0) {
+				const file = fileInput.files[0];
+				
+				try {
+					const fileContent = await readFileAsText(file);
+					links = fileContent.split('\n').map(line => line.trim()).map(line => line.endsWith('/') ? line.slice(0, -1) : line).filter(line => line.length > 0);
+
+					// Reset the form after processing the file
+					document.querySelector("#RemoteBulkURLUploadForm").reset();
+				} catch (error) {
+					console.error('Error processing file:', error);
+				}
+			} else {
+				alert("No file selected!");
+			}
+			
+			let url = document.getElementById("RemoteBulkURLUploadForm").action;
+
+			let formData = new FormData();
+			links.forEach(link => {
+				formData.append("urls", link);
+			});
+
+			try {
+				const res = await fetchWithAuth(url, "POST", formData);
+				if (res.ok) {
+					bulkprogress_url.textContent = `Downloads have started...`;
+				}
+				else {
+					const result = await res.json();
+					bulkprogress_url.textContent = result.message || "Serverside error!";
+				}
+			}
+			catch (error) {
+				bulkprogress_url.textContent = error;
+			}
 		}
 
-		async function load() {
+		document.getElementById("uploadurl").addEventListener("input", function() {
+			progress_url.textContent = "Download";
+		});
+
+		fileInput.addEventListener("change", function() {
+			bulkprogress_url.textContent = "Download all links from txt";
+		});
+
+		document.querySelector("#GetTasksForm").addEventListener("submit", async function(e) {
+			// If the Refresh Tasks button gets pressed
+			e.preventDefault();
+
+			// Reset download button text
+			progress_url.textContent = "Download"
+			bulkprogress_url.textContent = "Download all links from txt";
+
+			// Get all ongoing tasks
 			let url = document.querySelector("#GetTasksForm").action
 			const res = await fetchWithAuth(url, "GET", null)
 			let tasks = await res.json();
 
-			return tasks;
+			let curr_tasks = document.querySelector(".current_tasks");
+			curr_tasks.innerHTML = "";
+
+			// Append all tasks to the tasks div
+			for (let i = 0; i < tasks.length; i++) {
+				// Each task is another div which consits of the filename and a cancel button
+				// Each cancel button will have the cancellation token as their name and an onclick attribute to cancel the task
+				let task_div = document.createElement("div");
+				task_div.setAttribute("style", "display: flex; flex-direction: row; gap: 10px;")
+
+				let task = document.createElement("p");
+				task.innerText = tasks[i]["FileName"]
+
+				let task_progress = document.createElement("p");
+
+				let filesizenow = convertSize(parseInt(tasks[i]["FileSizeNow"]));
+				let filesize = convertSize(parseInt(tasks[i]["FileSize"]));
+
+				task_progress.innerText = filesizenow + " out of " + filesize;
+
+				let task_cancel = document.createElement("p");
+				task_cancel.innerText = "Cancel";
+				task_cancel.name = tasks[i]["Key"];
+				task_cancel.style["cursor"] = "pointer";
+				task_cancel.setAttribute("onclick", "cancelTask(this)");
+
+				// Append both the task file name and the cancel button to the parent div
+				task_div.appendChild(task);
+				task_div.appendChild(task_progress);
+				task_div.appendChild(task_cancel);
+
+				// Append this parent div to the tasks div
+				curr_tasks.appendChild(task_div);
+			}
+		})
+
+		async function cancelTask(param) {
+			// Create form data with the cancellation key
+			let form = new FormData()
+			form.set("cancellationKey", param.name)
+			try {
+				param.innerText = "Cancelling...";
+				param.removeAttribute("onclick");
+				// Request the cancel and get the result
+				const req = await fetchWithAuth("/mediaupload/upload_cancel", "POST", form);
+				const res = await req.json();
+				if (res.ok) {
+					param.innerText = "Cancelled successfully";
+				}
+				else {
+					param.innerText = res.message || "Something went wrong";
+				}
+				
+			}
+			catch (error) {
+				param.innerText = "Something went wrong";
+			}
+			return;
 		}
 
-		let progress = document.getElementById("progress_file");
-		let chunk_size = 28000000;
-		
-		document.querySelector("#RemoteFileUploadForm")
-			.addEventListener("submit", async function(e) {
-				e.preventDefault();
+		function convertSize(bytes) {
+			let size = 0;
+			let dict = ["Bytes", "KB", "MB", "GB", "TB", "PB", "Liar"]
+			while (bytes >= 1024 && size < dict.length - 1) {
+				bytes = bytes / 1024;
+				size++;
+			}
+			let final = bytes.toFixed(2) + ' ' + dict[size];
+			return final;
+		}
 
-				let formElement = document.getElementById("RemoteFileUploadForm");
-				let formData = new FormData(formElement);
-				let url = formElement.action;
+		/* Download */
+		async function remoteDownload(filepath) {
+			let formData = new FormData();
+			formData.append("path", filepath);
 
-				for (let [key, file] of formData.entries()) {
-					let chunk_index = 0;
-					let start = 0;
+			try {
+				const res = await fetchWithAuth("/mediaupload/download", "POST", formData);
 
-					if (file instanceof File) { 
-						while (start < file.size) {
-							const chunk = file.slice(start, start+chunk_size);
-							let chunk_form = new FormData();
-							chunk_form.set("file", chunk, file.name)
-							chunk_form.set("chunkIndex", chunk_index)
-							chunk_form.set("totalChunks", Math.ceil(file.size / chunk_size))
-
-							// Request
-							try {
-								const res = await fetchWithAuth(url, "POST", chunk_form);
-								if (res.ok) {
-									console.log("Successfully saved chunk " + chunk_index);
-									let progress_value = ((chunk_index+1)/Math.ceil(file.size / chunk_size))*100
-									progress.textContent = file.name + " " + progress_value.toString() + "%"
-									start += chunk_size
-									chunk_index++;
-								}
-								else {
-                                    const result = await res.json();
-                                    progress.textContent = result.message || 'Upload failed!';
-                                    return;
-                                }
-								
-							} catch (error) {
-								progress.textContent = "Upload failed!"
-								console.log('Error:', error);
-								return;
-							}
-						}
-					}
-				}
-				/* If upload finished successfully */
-				progress.textContent = "Upload finished";
-				document.getElementById("uploadfile").value = "";
-				return;
-			});
-
-			document.getElementById("uploadfile").addEventListener("change", (event) => {
-				progress.textContent = "Upload";
-			});
-
-			/* Upload from URL */
-			let progress_url = document.getElementById("progress_url");
-			document.querySelector("#RemoteURLUploadForm").addEventListener("submit", async function(e) {
-				e.preventDefault();
-				
-				let formElement = document.getElementById("RemoteURLUploadForm");
-				let formData = new FormData();
-				formData.set("url", document.getElementById("uploadurl").value);
-
-				let url = formElement.action;
-
-				try {
-					progress_url.textContent = "Download queued..."
-					const res = await fetchWithAuth(url, "POST", formData)
-					if (res.ok) {
-						progress_url.textContent = "Download has started..."
-						document.getElementById("uploadurl").value = "";
-						return;
-					}
-					else {
-						const result = await res.json();
-						progress_url.textContent = result.message || "Download failed!";
-						return;
-					}
-				}
-				catch (error) {
-					progress_url.textContent = "Download failed!"
+				if (res.ok) {
+					document.querySelector("#download_status").innerText = "downloading..."
+					const blob = await res.blob(); // Get the file as a blob
+					const downloadUrl = window.URL.createObjectURL(blob);
+					const a = document.createElement("a");
+					a.style.display = "none";
+					a.href = downloadUrl;
+					a.download = formData.get("path").split('/').pop().split('\\').pop().split('//').pop(); // Set the filename
+					document.body.appendChild(a);
+					a.click();
+					window.URL.revokeObjectURL(downloadUrl);
+					document.querySelector("#download_status").innerText = "idle";
 					return;
 				}
-			});
-
-			let bulkprogress_url = document.querySelector("#bulkprogress_url");
-
-			function readFileAsText(file) {
-				return new Promise((resolve, reject) => {
-					const reader = new FileReader();
-
-					reader.onload = function(event) {
-						resolve(event.target.result);
-					};
-
-					reader.onerror = function(event) {
-						reject(event.target.error);
-					};
-
-					reader.readAsText(file);
-				});
-			}
-			let links = [];
-			async function bulkDownload() {
-				const fileInput = document.querySelector("#uploadbulkurlsubmit");
-
-				if (fileInput.files.length > 0) {
-					const file = fileInput.files[0];
-					
-					try {
-						const fileContent = await readFileAsText(file);
-						links = fileContent.split('\n').map(line => line.trim()).map(line => line.endsWith('/') ? line.slice(0, -1) : line).filter(line => line.length > 0);
-
-						// Reset the form after processing the file
-						document.querySelector("#RemoteBulkURLUploadForm").reset();
-					} catch (error) {
-						console.error('Error processing file:', error);
-					}
-				} else {
-					alert("No file selected!");
-				}
-				
-				let url = document.getElementById("RemoteBulkURLUploadForm").action;
-
-				let formData = new FormData();
-				links.forEach(link => {
-					formData.append("urls", link);
-				});
-
-				try {
-					const res = await fetchWithAuth(url, "POST", formData);
-					if (res.ok) {
-						bulkprogress_url.textContent = `Downloads are starting.`;
-					}
-					else {
-						const result = await res.json();
-						bulkprogress_url.textContent = result.message || "Serverside error!";
-					}
-				}
-				catch (error) {
-					bulkprogress_url.textContent = error;
+				else {
+					const result = await res.json();
+					document.querySelector("#download_status").textContent = result.message || "failed";
+					return;
 				}
 			}
-
-			document.getElementById("uploadurl").addEventListener("change", function() {
-				progress_url.textContent = "Download";
-			})
-
-			document.querySelector("#GetTasksForm").addEventListener("submit", async function(e) {
-				// If the Refresh Tasks button gets pressed
-				e.preventDefault();
-
-				// Get all ongoing tasks with load()
-				let tasks = await load();
-				let curr_tasks = document.querySelector(".current_tasks");
-				curr_tasks.innerHTML = "";
-
-				// Append all tasks to the tasks div
-				for (let i = 0; i < tasks.length; i++) {
-					// Each task is another div which consits of the filename and a cancel button
-					// Each cancel button will have the cancellation token as their name and an onclick attribute to cancel the task
-					let task_div = document.createElement("div");
-					task_div.setAttribute("style", "display: flex; flex-direction: row; gap: 10px;")
-
-					let task = document.createElement("p");
-					task.innerText = tasks[i]["FileName"]
-
-					let task_progress = document.createElement("p");
-
-					let filesizenow = convertSize(parseInt(tasks[i]["FileSizeNow"]));
-					let filesize = convertSize(parseInt(tasks[i]["FileSize"]));
-
-					task_progress.innerText = filesizenow + " out of " + filesize;
-
-					let task_cancel = document.createElement("p");
-					task_cancel.innerText = "Cancel";
-					task_cancel.name = tasks[i]["Key"];
-					task_cancel.style["cursor"] = "pointer";
-					task_cancel.setAttribute("onclick", "cancelTask(this)");
-
-					// Append both the task file name and the cancel button to the parent div
-					task_div.appendChild(task);
-					task_div.appendChild(task_progress);
-					task_div.appendChild(task_cancel);
-
-					// Append this parent div to the tasks div
-					curr_tasks.appendChild(task_div);
-				}
-			})
-
-			async function cancelTask(param) {
-				// Create form data with the cancellation key
-				let form = new FormData()
-				form.set("cancellationKey", param.name)
-				try {
-					param.innerText = "Cancelling...";
-					param.removeAttribute("onclick");
-					// Request the cancel and get the result
-					const req = await fetchWithAuth("/mediaupload/upload_cancel", "POST", form);
-					const res = await req.json();
-					if (res.ok) {
-						param.innerText = "Cancelled successfully";
-					}
-					else {
-						param.innerText = res.message || "Something went wrong";
-					}
-					
-				}
-				catch (error) {
-					param.innerText = "Something went wrong";
-				}
+			catch (error) {
+				document.querySelector("#download_status").textContent = "failed"
 				return;
 			}
+		}
 
-			function convertSize(bytes) {
-				let size = 0;
-				let dict = ["Bytes", "KB", "MB", "GB", "TB", "PB", "Liar"]
-				while (bytes >= 1024 && size < dict.length - 1) {
-					bytes = bytes / 1024;
-					size++;
-				}
-				let final = bytes.toFixed(2) + ' ' + dict[size];
-				return final;
-			}
+		document.querySelector("#RemoteDirectory").addEventListener("submit", async function(e) {
+			e.preventDefault();
+			await listDirectory();
+		})
 
-			/* Download */
-            remoteDownload = document.querySelector("#RemoteDownload");
-            remoteDownload.addEventListener("submit", async function(e) {
-                e.preventDefault();
-				await doRemoteDownload();
-            });
-			async function doRemoteDownload() {
-				let formData = new FormData(remoteDownload);
-                let url = remoteDownload.action;
+		async function listDirectory() {
+			try {
+				const scrollTop = window.scrollY;
 
-                try {
-                    const res = await fetchWithAuth(url, "POST", formData);
+				const pathInput = document.getElementById("downloadpathfolder");
+				let oldPath = pathInput.value.trim().replace(/\\/g, "/");
+				if (!oldPath.endsWith("/")) oldPath += "/";
+				pathInput.value = oldPath;
 
-                    if (res.ok) {
-                        document.querySelector("#download_button").innerText = "Downloading..."
-                        const blob = await res.blob(); // Get the file as a blob
-                        const downloadUrl = window.URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.style.display = "none";
-                        a.href = downloadUrl;
-                        a.download = formData.get("path").split('/').pop().split('\\').pop().split('//').pop(); // Set the filename
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(downloadUrl);
-                        document.querySelector("#download_button").innerText = "Download";
-                        return;
-                    }
-                    else {
-                        const result = await res.json();
-                        document.querySelector("#download_button").textContent = result.message || "Download failed!";
-                        return;
-                    }
-                }
-                catch (error) {
-                    document.querySelector("#download_button").textContent = "Download failed!"
-                    return;
-                }
-			}
+				const formData = new FormData(document.querySelector("#RemoteDirectory"));
+				document.getElementById("folderContentDisplay").innerHTML = "";
+				const res = await fetchWithAuth(document.querySelector("#RemoteDirectory").action, "POST", formData)
+				if (res.ok) {
+					let files = await res.json();
 
-			document.querySelector("#RemoteDirectory").addEventListener("submit", async function(e) {
-				e.preventDefault();
-				await listDirectory();
-			})
-			async function listDirectory() {
-				try {
-					const scrollTop = window.scrollY;
+					let oldPath = document.getElementById("downloadpathfolder").value;
+					if (!oldPath.endsWith("/")) {
+						oldPath += "/";
+					}
 
-					const pathInput = document.getElementById("downloadpathfolder");
-					let oldPath = pathInput.value.trim().replace(/\\/g, "/");
-					if (!oldPath.endsWith("/")) oldPath += "/";
-					pathInput.value = oldPath;
+					// Up element
+					const upElement = document.createElement("div");
+					upElement.className = "listItem listItem-border lnkPath lnkDirectory";
+					upElement.setAttribute("data-type", "Directory");
+					upElement.setAttribute("data-path", "..");
+					upElement.style.cursor = "pointer";
 
-					const formData = new FormData(document.querySelector("#RemoteDirectory"));
-					document.getElementById("folderContentDisplay").innerHTML = "";
-					const res = await fetchWithAuth(document.querySelector("#RemoteDirectory").action, "POST", formData)
-					if (res.ok) {
-						let files = await res.json();
-	
-						let oldPath = document.getElementById("downloadpathfolder").value;
-						if (!oldPath.endsWith("/")) {
-							oldPath += "/";
+					// Inner body
+					let upBody = document.createElement("div");
+					upBody.className = "listItemBody";
+					upBody.style.paddingLeft = "0";
+					upBody.style.paddingTop = ".5em";
+					upBody.style.paddingBottom = ".5em";
+
+					// Text
+					let upText = document.createElement("div");
+					upText.className = "listItemBodyText";
+					upText.textContent = "..";
+
+					// Compose
+					upBody.appendChild(upText);
+					upElement.appendChild(upBody);
+
+					// Arrow
+					let upArrow = document.createElement("span");
+					upArrow.className = "material-icons arrow_forward";
+					upArrow.setAttribute("aria-hidden", "true");
+					upArrow.style.fontSize = "inherit";
+					upElement.appendChild(upArrow);
+
+					// Behavior: go up one directory
+					upElement.onclick = async function () {
+						let currentPath = document.getElementById("downloadpathfolder").value.trim().replace(/\/+$/, "");
+						const segments = currentPath.split("/");
+						if (segments.length > 1) {
+							segments.pop(); // remove last folder
+							document.getElementById("downloadpathfolder").value = segments.join("/") + "/";
+							await listDirectory();
 						}
+					};
 
-						// Up element
-						const upElement = document.createElement("div");
-						upElement.className = "listItem listItem-border lnkPath lnkDirectory";
-						upElement.setAttribute("data-type", "Directory");
-						upElement.setAttribute("data-path", "..");
-						upElement.style.cursor = "pointer";
+					document.querySelector("#folderContentDisplay").appendChild(upElement);
+
+					for (let i = 0; i<files.length; i++) {
+						const path = files[i];
+						const isFolder = path.endsWith("/");
+
+						// Wrapper div
+						let element = document.createElement("div");
+						element.className = "listItem listItem-border lnkPath";
+						element.setAttribute("data-type", isFolder ? "Directory" : "File");
+						element.setAttribute("data-path", oldPath + path);
+						element.style.cursor = "pointer";
+
+						// Add folder class if it's a directory
+						if (isFolder) {
+							element.classList.add("lnkDirectory");
+						}
 
 						// Inner body
-						let upBody = document.createElement("div");
-						upBody.className = "listItemBody";
-						upBody.style.paddingLeft = "0";
-						upBody.style.paddingTop = ".5em";
-						upBody.style.paddingBottom = ".5em";
+						let body = document.createElement("div");
+						body.className = "listItemBody";
+						body.style.paddingLeft = "0";
+						body.style.paddingTop = ".5em";
+						body.style.paddingBottom = ".5em";
 
-						// Text
-						let upText = document.createElement("div");
-						upText.className = "listItemBodyText";
-						upText.textContent = "..";
+						// Text element
+						let text = document.createElement("div");
+						text.className = "listItemBodyText";
+						text.textContent = path;
 
 						// Compose
-						upBody.appendChild(upText);
-						upElement.appendChild(upBody);
+						body.appendChild(text);
+						element.appendChild(body);
 
-						// Arrow
-						let upArrow = document.createElement("span");
-						upArrow.className = "material-icons arrow_forward";
-						upArrow.setAttribute("aria-hidden", "true");
-						upArrow.style.fontSize = "inherit";
-						upElement.appendChild(upArrow);
-
-						// Behavior: go up one directory
-						upElement.onclick = async function () {
-							let currentPath = document.getElementById("downloadpathfolder").value.trim().replace(/\/+$/, "");
-							const segments = currentPath.split("/");
-							if (segments.length > 1) {
-								segments.pop(); // remove last folder
-								document.getElementById("downloadpathfolder").value = segments.join("/") + "/";
-								await listDirectory();
-							}
-						};
-
-						document.querySelector("#folderContentDisplay").appendChild(upElement);
-	
-						for (let i = 0; i<files.length; i++) {
-							const path = files[i];
-							const isFolder = path.endsWith("/");
-
-							// Wrapper div
-							let element = document.createElement("div");
-							element.className = "listItem listItem-border lnkPath";
-							element.setAttribute("data-type", isFolder ? "Directory" : "File");
-							element.setAttribute("data-path", oldPath + path);
-							element.style.cursor = "pointer";
-
-							// Add folder class if it's a directory
-							if (isFolder) {
-								element.classList.add("lnkDirectory");
-							}
-
-							// Inner body
-							let body = document.createElement("div");
-							body.className = "listItemBody";
-							body.style.paddingLeft = "0";
-							body.style.paddingTop = ".5em";
-							body.style.paddingBottom = ".5em";
-
-							// Text element
-							let text = document.createElement("div");
-							text.className = "listItemBodyText";
-							text.textContent = path;
-
-							// Compose
-							body.appendChild(text);
-							element.appendChild(body);
-
-							// Arrow icon (for folders only)
-							if (isFolder) {
-								let arrow = document.createElement("span");
-								arrow.className = "material-icons arrow_forward";
-								arrow.setAttribute("aria-hidden", "true");
-								arrow.style.fontSize = "inherit";
-								element.appendChild(arrow);
-							}
-
-							
-
-							// Behavior
-							if (isFolder) {
-								element.onclick = async function() {
-									document.getElementById("downloadpathfolder").value = oldPath + path;
-									document.getElementById("downloadpathfolder").blur();
-									await listDirectory();
-								};
-							} else {
-								element.onclick = async function() {
-									const confirmDownload = window.confirm("Do you want to download this file?");
-									if (confirmDownload) {
-										document.getElementById("downloadpath").value = oldPath + path;
-										await doRemoteDownload();
-									}
-								};
-							}
-
-							// Add to container
-							document.querySelector("#folderContentDisplay").appendChild(element);
+						// Arrow icon (for folders only)
+						if (isFolder) {
+							let arrow = document.createElement("span");
+							arrow.className = "material-icons arrow_forward";
+							arrow.setAttribute("aria-hidden", "true");
+							arrow.style.fontSize = "inherit";
+							element.appendChild(arrow);
 						}
-						window.scrollTo(0, scrollTop);
-						
-						return;
+
+						// Behavior
+						if (isFolder) {
+							element.onclick = async function() {
+								document.getElementById("downloadpathfolder").value = oldPath + path;
+								document.getElementById("downloadpathfolder").blur();
+								await listDirectory();
+							};
+						} else {
+							element.onclick = async function() {
+								const confirmDownload = window.confirm("Do you want to download this file?");
+								if (confirmDownload) {
+									await remoteDownload(oldPath + path);
+								}
+							};
+						}
+
+						// Add to container
+						document.querySelector("#folderContentDisplay").appendChild(element);
 					}
-					else {
-						const result = await res.json();
-						return;
-					}
+					window.scrollTo(0, scrollTop);
+					
+					return;
 				}
-				catch {
-                    return;
+				else {
+					const result = await res.json();
+					return;
 				}
 			}
+			catch {
+				return;
+			}
+		}
 	</script>
 </div>
