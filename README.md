@@ -31,4 +31,6 @@ location / {
 - After updating the upload directory, please refresh the Upload page
 - Make sure the server will have some downloaded data after 5 seconds, when inputing the download url
 
+This project is licensed under the MIT license.
+
 Thank you for using this plugin
