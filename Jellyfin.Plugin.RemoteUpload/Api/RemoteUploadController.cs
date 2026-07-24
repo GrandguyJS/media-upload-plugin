@@ -308,24 +308,26 @@ public class UploadController : ControllerBase
 
     private string GetFileName(HttpResponseMessage response, string url) {
         string? filename = null;
+        var contentDisposition = response.Content.Headers.ContentDisposition;
 
-        if (response.Content.Headers.ContentDisposition != null) {
-            var contentDisposition = response.Content.Headers.ContentDisposition;
-            if (!string.IsNullOrEmpty(contentDisposition.FileName)) {
-                filename = contentDisposition.FileName.Trim('\"');
-            }
-            if (!string.IsNullOrEmpty(contentDisposition.FileNameStar))
-            {
-                filename = contentDisposition.FileNameStar.Trim('\"');
-            }
+        if (contentDisposition != null)
+        {
+            filename = !string.IsNullOrEmpty(contentDisposition.FileNameStar)
+                ? contentDisposition.FileNameStar.Trim('"')
+                : contentDisposition.FileName?.Trim('"');
         }
 
-        if (filename == null) {
-            Uri uri = new Uri(url);
-            filename = Path.GetFileName(uri.AbsolutePath);
+        if (string.IsNullOrEmpty(filename))
+        {
+            var uri = new Uri(url);
+            filename = Uri.UnescapeDataString(Path.GetFileName(uri.AbsolutePath));
         }
 
-        return filename ?? "filewithoutname.mp4";
+        filename = Path.GetFileName(filename);
+
+        return string.IsNullOrEmpty(filename)
+            ? "filewithoutname.mp4"
+            : filename;
     }
 
     private long GetFileSize(HttpResponseMessage response) {
