@@ -8,6 +8,13 @@
         "overview": "remoteupload",
         "versions": [
             {
+                "checksum": "321ea03065937dac4812b9df2d00feb4",
+                "changelog": "1.8 Release - Decode URL encoded strings",
+                "targetAbi": "10.9.9.0",
+                "sourceUrl": "https://github.com/GrandguyJS/media-upload-plugin/releases/download/1.8/plugin.zip",
+                "version": "1.8.0.0"
+            }, 
+            {
                 "checksum": "482ff3c3d2c8bfb642b6df460ce67094",
                 "changelog": "1.7 Release - QoL fix",
                 "targetAbi": "10.9.9.0",
